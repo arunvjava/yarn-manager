@@ -1,0 +1,65 @@
+<aside class="d-flex flex-column justify-content-between p-3 border-end border-secondary border-opacity-25 flex-shrink-0 h-100" style="width: 260px; background-color: var(--app-sidebar-bg);">
+  <div class="d-flex flex-column gap-3">
+    <!-- App Brand -->
+    <div class="d-flex align-items-center gap-3 px-2 py-2 border-bottom border-secondary border-opacity-25 pb-3">
+      <div class="d-flex align-items-center justify-content-center bg-info text-dark fw-bold rounded-3 shadow-sm" style="width: 40px; height: 40px; font-size: 1.25rem;">
+        Y
+      </div>
+      <div>
+        <h6 class="mb-0 fw-bold text-white tracking-wide">YARN MANAGER</h6>
+        <small class="text-info text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.05em;">Tiruppur Knitwear ERP</small>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="nav nav-pills flex-column gap-1">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
+        <i class="bi bi-speedometer2 fs-5 text-info"></i>
+        <span>Pipeline Dashboard</span>
+      </a>
+
+      <div class="px-3 pt-3 pb-1 text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.08em;">
+        Stages (Yarn to Clothes)
+      </div>
+
+      <a routerLink="/yarn" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
+        <i class="bi bi-boxes fs-5 text-warning"></i>
+        <span>1. Yarn Inventory</span>
+      </a>
+
+      <a routerLink="/knitting" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
+        <i class="bi bi-gear-wide-connected fs-5 text-primary"></i>
+        <span>2. Circular Knitting</span>
+      </a>
+
+      <a routerLink="/dyeing" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
+        <i class="bi bi-droplet-half fs-5 text-indigo text-info"></i>
+        <span>3. Dyeing DC Tracking</span>
+      </a>
+
+      <a routerLink="/cutting" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
+        <i class="bi bi-scissors fs-5 text-purple" style="color: #c084fc;"></i>
+        <span>4. Cutting &amp; Bundles</span>
+      </a>
+
+      <a routerLink="/sewing" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
+        <i class="bi bi-threads fs-5 text-success"></i>
+        <span>5. Sewing Assembly</span>
+      </a>
+
+      <a routerLink="/packing" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
+        <i class="bi bi-box-seam fs-5 text-teal text-info"></i>
+        <span>6. Carton Dispatch</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Cluster Badge -->
+  <div class="card bg-dark border border-secondary border-opacity-25 rounded-3 p-3">
+    <div class="d-flex align-items-center gap-2 text-white small fw-semibold mb-1">
+      <span class="badge bg-success p-1 rounded-circle" style="width: 8px; height: 8px;"> </span>
+      <i class="bi bi-database-check text-info"></i> PostgreSQL 18
+    </div>
+    <small class="text-secondary" style="font-size: 0.7rem;">Tiruppur Export / Domestic Hub</small>
+  </div>
+</aside>

@@ -1,0 +1,91 @@
+/* Bootstrap 5 & Icons */
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+/* Angular Material Theme */
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --app-bg: #0b1120;
+  --app-card-bg: #111827;
+  --app-sidebar-bg: #0f172a;
+  --app-border: #1f2937;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--app-bg);
+  color: #f1f5f9;
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Dark themed card & table adjustments */
+.card-dark {
+  background-color: var(--app-card-bg);
+  border: 1px solid var(--app-border);
+  border-radius: 1rem;
+}
+
+.table-dark-custom {
+  --bs-table-bg: var(--app-card-bg);
+  --bs-table-striped-bg: #162032;
+  --bs-table-hover-bg: #1e293b;
+  --bs-table-border-color: #1e293b;
+  color: #e2e8f0;
+}
+
+.table-dark-custom thead th {
+  background-color: #0f172a;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #1e293b;
+}
+
+/* Input styles */
+.form-control-dark {
+  background-color: #0b1120 !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+  border-radius: 0.75rem;
+}
+
+.form-control-dark:focus {
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+}
+
+.form-select-dark {
+  background-color: #0b1120 !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+  border-radius: 0.75rem;
+}
+
+.badge-custom {
+  padding: 0.35em 0.65em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}

@@ -1,0 +1,67 @@
+<div class="d-flex flex-column gap-4">
+  <div class="card card-dark p-4 border-secondary border-opacity-25 shadow-sm">
+    <div>
+      <h4 class="fw-bold text-white mb-1">Dyeing &amp; Wet Processing (Job Work DC)</h4>
+      <p class="text-secondary small mb-0">Outward Delivery Challans to Perundurai/SIPCOT units, Inward DC weight reconciliation, and shade approval.</p>
+    </div>
+  </div>
+
+  <!-- Batches Cards -->
+  <div class="row g-4">
+    @for (batch of batches(); track batch.batchNumber) {
+      <div class="col-12 col-md-6">
+        <div class="card card-dark p-4 border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <span class="text-info font-monospace small fw-bold">{{ batch.batchNumber }}</span>
+                <h5 class="fw-bold text-white mb-1">{{ batch.dyeingUnitName }}</h5>
+                <small class="text-secondary">Shade: <span class="text-white fw-semibold">{{ batch.pantoneShade }}</span></small>
+              </div>
+              <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25">
+                {{ batch.status }}
+              </span>
+            </div>
+
+            <!-- DC Comparison Grid -->
+            <div class="card bg-dark border-secondary border-opacity-25 p-3 rounded-3 mb-3">
+              <div class="row g-2">
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Outward DC No</small>
+                  <span class="font-monospace text-light small">{{ batch.outwardDcNumber }}</span>
+                </div>
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Sent Weight</small>
+                  <span class="fw-bold text-warning">{{ batch.sentWeightKg | number:'1.2-2' }} kg</span>
+                </div>
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Received Weight</small>
+                  <span class="fw-bold text-success">{{ batch.receivedWeightKg ? (batch.receivedWeightKg | number:'1.2-2') + ' kg' : 'In Transit' }}</span>
+                </div>
+                <div class="col-12 mt-2 pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                  <small class="text-secondary" style="font-size: 0.75rem;">Finish Required:</small>
+                  <small class="text-white fw-semibold" style="font-size: 0.75rem;">{{ batch.finishType }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inward DC Action if pending -->
+          @if (batch.status === 'SENT_TO_DYEING') {
+            <div class="d-flex gap-2">
+              <input [(ngModel)]="reconciledWeight" type="number" placeholder="Inward Weight (kg)" class="form-control form-control-dark form-control-sm" />
+              <button (click)="receiveInward(batch.id!)" class="btn btn-info btn-sm fw-semibold text-nowrap">
+                Confirm Inward DC
+              </button>
+            </div>
+          } @else {
+            <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 rounded-3 small mb-0">
+              <span><i class="bi bi-check-circle-fill me-1"></i> Reconciled &amp; Approved</span>
+              <span class="fw-bold">Loss: {{ (((batch.sentWeightKg - (batch.receivedWeightKg || 0)) / batch.sentWeightKg) * 100) | number:'1.2-2' }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

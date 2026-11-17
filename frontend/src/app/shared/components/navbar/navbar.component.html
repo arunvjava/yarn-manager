@@ -1,0 +1,29 @@
+<header class="d-flex align-items-center justify-content-between px-4 border-bottom border-secondary border-opacity-25" style="height: 64px; background-color: var(--app-sidebar-bg);">
+  <!-- Left info -->
+  <div class="d-flex align-items-center gap-3">
+    <span class="badge rounded-pill bg-dark border border-secondary text-info px-3 py-2 d-flex align-items-center gap-2">
+      <span class="spinner-grow spinner-grow-sm text-success" role="status" style="width: 8px; height: 8px;"></span>
+      <i class="bi bi-clock-history"></i>
+      {{ currentShift }}
+    </span>
+    <span class="text-secondary small d-none d-sm-inline">
+      <i class="bi bi-geo-alt-fill text-danger me-1"></i>Plant: Tiruppur Knitwear Unit #1
+    </span>
+  </div>
+
+  <!-- Right User Profile & Logout -->
+  <div class="d-flex align-items-center gap-3">
+    @if (authService.currentUser(); as user) {
+      <div class="text-end">
+        <p class="mb-0 fw-semibold text-white small">{{ user.fullName }}</p>
+        <span class="badge bg-teal bg-opacity-25 text-info text-uppercase fw-bold" style="font-size: 0.65rem;">
+          {{ user.role }}
+        </span>
+      </div>
+      <button (click)="logout()" class="btn btn-sm btn-outline-danger rounded-3 d-flex align-items-center gap-2">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Logout</span>
+      </button>
+    }
+  </div>
+</header>

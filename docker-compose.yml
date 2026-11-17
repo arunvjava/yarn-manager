@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: yarn_manager_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: yarn_manager_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/02-seed-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
+    networks:
+      - yarn_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: yarn_manager_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@tiruppurtextiles.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - yarn_network
+
+volumes:
+  postgres_data:
+
+networks:
+  yarn_network:
+    driver: bridge

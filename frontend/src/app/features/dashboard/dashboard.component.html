@@ -1,0 +1,149 @@
+<div class="d-flex flex-column gap-4">
+  <!-- Title & Live Badge -->
+  <div class="card card-dark p-4 border-secondary border-opacity-25 shadow-sm">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+      <div>
+        <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 mb-2 d-inline-flex align-items-center gap-2">
+          <span class="spinner-grow spinner-grow-sm" role="status" style="width: 8px; height: 8px;"></span>
+          Tiruppur Cluster Live Operations
+        </span>
+        <h4 class="fw-bold text-white mb-1">Yarn-to-Garment Manufacturing Pipeline</h4>
+        <p class="text-secondary small mb-0">Real-time status tracking across Spinning Inward, Circular Knitting, Dyeing DC, Cutting &amp; Bundles, Sewing, and Packing.</p>
+      </div>
+      <button (click)="loadMetrics()" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 rounded-3 text-white">
+        <i class="bi bi-arrow-clockwise"></i>
+        <span>Refresh Status</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Pipeline Conversion Cards (6 Core Stages) -->
+  <div class="row g-3">
+    <!-- Stage 1 -->
+    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+      <div class="card card-dark h-100 p-3 border-top border-4 border-warning shadow-sm">
+        <span class="text-uppercase text-warning fw-bold mb-1" style="font-size: 0.7rem;">Stage 1: Yarn Inward</span>
+        <h4 class="fw-bold text-white mb-1">{{ summary()?.totalYarnInwardKg || 6000 | number:'1.0-0' }} <small class="fs-6 fw-normal text-secondary">kg</small></h4>
+        <small class="text-secondary" style="font-size: 0.75rem;">Counts: 30s, 34s, Melange</small>
+      </div>
+    </div>
+
+    <!-- Stage 2 -->
+    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+      <div class="card card-dark h-100 p-3 border-top border-4 border-primary shadow-sm">
+        <span class="text-uppercase text-primary fw-bold mb-1" style="font-size: 0.7rem;">Stage 2: Knitting</span>
+        <h4 class="fw-bold text-white mb-1">{{ summary()?.totalKnittedFabricKg || 2450 | number:'1.0-0' }} <small class="fs-6 fw-normal text-secondary">kg grey</small></h4>
+        <small class="text-secondary" style="font-size: 0.75rem;">Dia 30" / 24 GG / Single Jersey</small>
+      </div>
+    </div>
+
+    <!-- Stage 3 -->
+    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+      <div class="card card-dark h-100 p-3 border-top border-4 border-info shadow-sm">
+        <span class="text-uppercase text-info fw-bold mb-1" style="font-size: 0.7rem;">Stage 3: Dyeing DC</span>
+        <h4 class="fw-bold text-white mb-1">{{ summary()?.totalDyedFabricKg || 2330 | number:'1.0-0' }} <small class="fs-6 fw-normal text-secondary">kg dyed</small></h4>
+        <small class="text-secondary" style="font-size: 0.75rem;">SIPCOT Units (Bio-Wash)</small>
+      </div>
+    </div>
+
+    <!-- Stage 4 -->
+    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+      <div class="card card-dark h-100 p-3 border-top border-4 border-danger shadow-sm">
+        <span class="text-uppercase text-danger fw-bold mb-1" style="font-size: 0.7rem;">Stage 4: Lay Cutting</span>
+        <h4 class="fw-bold text-white mb-1">{{ summary()?.totalCutPieces || 10000 | number }} <small class="fs-6 fw-normal text-secondary">pcs</small></h4>
+        <small class="text-secondary" style="font-size: 0.75rem;">QR Bundles Generated</small>
+      </div>
+    </div>
+
+    <!-- Stage 5 -->
+    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+      <div class="card card-dark h-100 p-3 border-top border-4 border-success shadow-sm">
+        <span class="text-uppercase text-success fw-bold mb-1" style="font-size: 0.7rem;">Stage 5: Sewing Lines</span>
+        <h4 class="fw-bold text-white mb-1">{{ summary()?.totalSewnGarments || 49 | number }} <small class="fs-6 fw-normal text-secondary">passed</small></h4>
+        <small class="text-secondary" style="font-size: 0.75rem;">Lines 1 &amp; 2 Assembly</small>
+      </div>
+    </div>
+
+    <!-- Stage 6 -->
+    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+      <div class="card card-dark h-100 p-3 border-top border-4 border-info shadow-sm">
+        <span class="text-uppercase text-info fw-bold mb-1" style="font-size: 0.7rem;">Stage 6: Cartons</span>
+        <h4 class="fw-bold text-white mb-1">{{ summary()?.totalPackedGarments || 120 | number }} <small class="fs-6 fw-normal text-secondary">packed</small></h4>
+        <small class="text-secondary" style="font-size: 0.75rem;">Ready for Shipment</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversion & Wastage Metrics -->
+  <div class="row g-4">
+    <div class="col-12 col-lg-8">
+      <div class="card card-dark p-4 border-secondary border-opacity-25 h-100">
+        <h5 class="fw-bold text-white mb-4">Stage-by-Stage Flow &amp; Reconciliation</h5>
+        <div class="d-flex flex-column gap-4">
+          <div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-secondary">Yarn to Knitted Grey Fabric (Avg Loss: 1.8%)</span>
+              <span class="text-success fw-bold">98.2% Yield</span>
+            </div>
+            <div class="progress" style="height: 8px; background-color: #1e293b;">
+              <div class="progress-bar bg-primary" role="progressbar" style="width: 98.2%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-secondary">Grey Fabric to Dyeing Processing (Weight Retention)</span>
+              <span class="text-info fw-bold">97.1% Yield</span>
+            </div>
+            <div class="progress" style="height: 8px; background-color: #1e293b;">
+              <div class="progress-bar bg-info" role="progressbar" style="width: 97.1%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-secondary">Cutting Panel Efficiency (Lay Plan vs End bits)</span>
+              <span class="text-warning fw-bold">96.5% Utilization</span>
+            </div>
+            <div class="progress" style="height: 8px; background-color: #1e293b;">
+              <div class="progress-bar bg-warning" role="progressbar" style="width: 96.5%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-secondary">Sewing Assembly Line Pass Rate (DHU Inspection)</span>
+              <span class="text-success fw-bold">98.0% First-Time-Right</span>
+            </div>
+            <div class="progress" style="height: 8px; background-color: #1e293b;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 98.0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Summary Box -->
+    <div class="col-12 col-lg-4">
+      <div class="card card-dark p-4 border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <h5 class="fw-bold text-white mb-2">Tiruppur Mill Specifications</h5>
+          <p class="text-secondary small">
+            Knitting dia 30"/24GG is matched with 30s combed cotton for 180 GSM single jersey. 
+            Job work delivery challans are reconciled automatically with weight difference alerts.
+          </p>
+        </div>
+        <div class="pt-3 border-top border-secondary border-opacity-25 mt-4 d-flex flex-column gap-2 small">
+          <div class="d-flex justify-content-between">
+            <span class="text-secondary">Main Spun Mills:</span>
+            <span class="text-white fw-semibold">KPR, Ramco, Bannari</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-secondary">Processing Units:</span>
+            <span class="text-white fw-semibold">SIPCOT Perundurai ZLD</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

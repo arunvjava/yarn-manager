@@ -1,0 +1,23 @@
+<div class="min-vh-100" style="background-color: var(--app-bg);">
+  @if (authService.isAuthenticated()) {
+    <!-- Full Authenticated App Layout (Sidebar + Top Navbar + Routed Content) -->
+    <div class="d-flex vh-100 overflow-hidden">
+      <!-- Sidebar Navigation -->
+      <app-sidebar></app-sidebar>
+
+      <!-- Main Content Area -->
+      <div class="d-flex flex-column flex-grow-1 min-w-0 overflow-hidden">
+        <!-- Top Navbar -->
+        <app-navbar></app-navbar>
+
+        <!-- Dynamic Stage View Content -->
+        <main class="flex-grow-1 overflow-auto p-4 p-md-4">
+          <router-outlet></router-outlet>
+        </main>
+      </div>
+    </div>
+  } @else {
+    <!-- Clean Full-Screen View for Login Screen -->
+    <router-outlet></router-outlet>
+  }
+</div>

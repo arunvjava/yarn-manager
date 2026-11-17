@@ -1,0 +1,103 @@
+<div class="d-flex flex-column gap-4">
+  <div class="card card-dark p-4 border-secondary border-opacity-25 shadow-sm">
+    <div>
+      <h4 class="fw-bold text-white mb-1">Circular Knitting Programs &amp; Grey Rolls</h4>
+      <p class="text-secondary small mb-0">Machine Diameter, Gauge (GG), target GSM, roll weighing, and knitting loss reconciliation.</p>
+    </div>
+  </div>
+
+  <!-- Knitting Programs List -->
+  <div class="row g-4">
+    @for (prog of programs(); track prog.id) {
+      <div class="col-12 col-md-6">
+        <div class="card card-dark p-4 border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <span class="text-primary font-monospace small fw-bold">{{ prog.programNumber }}</span>
+                <h5 class="fw-bold text-white mb-0">{{ prog.fabricType }}</h5>
+              </div>
+              <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">
+                {{ prog.status }}
+              </span>
+            </div>
+
+            <!-- Parameters Grid -->
+            <div class="card bg-dark border-secondary border-opacity-25 p-3 rounded-3 mb-3">
+              <div class="row g-2 text-center">
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Machine Dia</small>
+                  <span class="fw-bold text-white">{{ prog.machineDia }}"</span>
+                </div>
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Gauge</small>
+                  <span class="fw-bold text-white">{{ prog.gauge }} GG</span>
+                </div>
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Target GSM</small>
+                  <span class="fw-bold text-white">{{ prog.targetGsm }} GSM</span>
+                </div>
+                <div class="col-4 mt-2">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Allocated Yarn</small>
+                  <span class="fw-bold text-warning">{{ prog.allocatedYarnKg }} kg</span>
+                </div>
+                <div class="col-4 mt-2">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Loop Length</small>
+                  <span class="fw-bold text-white">{{ prog.loopLength }} mm</span>
+                </div>
+                <div class="col-4 mt-2">
+                  <small class="text-secondary d-block" style="font-size: 0.7rem;">Rolls Produced</small>
+                  <span class="fw-bold text-success">{{ rolls().length }} rolls</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Register New Roll Quick Action -->
+          <div class="d-flex gap-2">
+            <input [(ngModel)]="newRollWeight" type="number" placeholder="Roll Wt (kg)" class="form-control form-control-dark form-control-sm" />
+            <input [(ngModel)]="newRollGsm" type="number" placeholder="Tested GSM" class="form-control form-control-dark form-control-sm" />
+            <button (click)="addRoll(prog.id!)" class="btn btn-primary btn-sm fw-semibold text-nowrap">
+              + Add Roll
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Produced Rolls Table -->
+  <div class="card card-dark border-secondary border-opacity-25 overflow-hidden shadow-sm">
+    <div class="p-3 border-bottom border-secondary border-opacity-25">
+      <h6 class="fw-bold text-white mb-0">Recorded Grey Fabric Rolls (Barcoded)</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-dark-custom table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th class="px-4 py-3">Roll Barcode ID</th>
+            <th class="px-4 py-3">Weight (kg)</th>
+            <th class="px-4 py-3">Actual GSM</th>
+            <th class="px-4 py-3">Grade</th>
+            <th class="px-4 py-3">QC Inspector</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (roll of rolls(); track roll.rollNumber) {
+            <tr>
+              <td class="px-4 py-3 font-monospace text-primary fw-semibold small">{{ roll.rollNumber }}</td>
+              <td class="px-4 py-3 fw-bold text-white">{{ roll.rollWeightKg | number:'1.2-2' }} kg</td>
+              <td class="px-4 py-3">{{ roll.actualGsm }} GSM</td>
+              <td class="px-4 py-3">
+                <span class="badge" [ngClass]="roll.qualityGrade === 'A' ? 'bg-success bg-opacity-25 text-success border border-success' : 'bg-warning bg-opacity-25 text-warning border border-warning'">
+                  Grade {{ roll.qualityGrade }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-secondary small">{{ roll.inspectedBy }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

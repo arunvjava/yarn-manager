@@ -1,0 +1,98 @@
+<div class="d-flex flex-column gap-4">
+  <div class="card card-dark p-4 border-secondary border-opacity-25 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h4 class="fw-bold text-white mb-1">Yarn Warehouse &amp; Inward Stock</h4>
+        <p class="text-secondary small mb-0">Spinning mill cone lots, counts (30s, 34s, Lycra, Melange), and bag inventory.</p>
+      </div>
+      <button (click)="toggleInwardModal()" class="btn btn-warning fw-bold d-flex align-items-center gap-2 rounded-3 text-dark">
+        <i class="bi bi-plus-lg"></i>
+        <span>Record Yarn Inward</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Yarn Stock Table -->
+  <div class="card card-dark border-secondary border-opacity-25 overflow-hidden shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-dark-custom table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th class="px-4 py-3">Spinning Mill</th>
+            <th class="px-4 py-3">Lot Number</th>
+            <th class="px-4 py-3">Yarn Count</th>
+            <th class="px-4 py-3">Type</th>
+            <th class="px-4 py-3">Bags</th>
+            <th class="px-4 py-3">Net Weight</th>
+            <th class="px-4 py-3">Rate / kg</th>
+            <th class="px-4 py-3">Received Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of stockList(); track item.id || item.lotNumber) {
+            <tr>
+              <td class="px-4 py-3 fw-semibold text-white">{{ item.millName }}</td>
+              <td class="px-4 py-3 font-monospace text-warning small">{{ item.lotNumber }}</td>
+              <td class="px-4 py-3 text-light">{{ item.yarnCount }}</td>
+              <td class="px-4 py-3">
+                <span class="badge bg-dark border border-secondary text-secondary">{{ item.yarnType }}</span>
+              </td>
+              <td class="px-4 py-3">{{ item.totalBags }}</td>
+              <td class="px-4 py-3 fw-bold text-white">{{ item.netWeightKg | number:'1.2-2' }} kg</td>
+              <td class="px-4 py-3 text-success fw-semibold">₹{{ item.ratePerKg | number:'1.2-2' }}</td>
+              <td class="px-4 py-3 text-secondary small">{{ item.receivedDate }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Quick Inward Modal -->
+  @if (showModal()) {
+    <div class="modal d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-dark border-secondary border-opacity-25 text-white">
+          <div class="modal-header border-secondary border-opacity-25">
+            <h5 class="modal-title fw-bold">Record Yarn Inward Receipt</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="toggleInwardModal()"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <div>
+              <label class="form-label text-secondary small mb-1">Spinning Mill Name</label>
+              <input [(ngModel)]="newStock.millName" type="text" placeholder="e.g. KPR Mill Ltd" class="form-control form-control-dark" />
+            </div>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label text-secondary small mb-1">Lot Number</label>
+                <input [(ngModel)]="newStock.lotNumber" type="text" placeholder="e.g. LOT-KPR-30S" class="form-control form-control-dark" />
+              </div>
+              <div class="col-6">
+                <label class="form-label text-secondary small mb-1">Yarn Count</label>
+                <input [(ngModel)]="newStock.yarnCount" type="text" placeholder="e.g. 30s Combed" class="form-control form-control-dark" />
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-4">
+                <label class="form-label text-secondary small mb-1">Bags</label>
+                <input [(ngModel)]="newStock.totalBags" type="number" class="form-control form-control-dark" />
+              </div>
+              <div class="col-4">
+                <label class="form-label text-secondary small mb-1">Net Wt (kg)</label>
+                <input [(ngModel)]="newStock.netWeightKg" type="number" class="form-control form-control-dark" />
+              </div>
+              <div class="col-4">
+                <label class="form-label text-secondary small mb-1">Rate (₹/kg)</label>
+                <input [(ngModel)]="newStock.ratePerKg" type="number" class="form-control form-control-dark" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-secondary border-opacity-25">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleInwardModal()">Cancel</button>
+            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark" (click)="saveInward()">Save Entry</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

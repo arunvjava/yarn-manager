@@ -1,0 +1,90 @@
+<div class="d-flex flex-column gap-4">
+  <div class="card card-dark p-4 border-secondary border-opacity-25 shadow-sm">
+    <div>
+      <h4 class="fw-bold text-white mb-1">Sewing Assembly Lines &amp; Hourly Board</h4>
+      <p class="text-secondary small mb-0">Line output, operator piece tracking, DHU defect rates (Overlock, Flatlock, Collar attach).</p>
+    </div>
+  </div>
+
+  <!-- Sewing Lines Cards -->
+  <div class="row g-4">
+    @for (line of lines(); track line.id) {
+      <div class="col-12 col-md-6">
+        <div class="card card-dark p-4 border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h5 class="fw-bold text-white mb-1">{{ line.lineName }}</h5>
+                <small class="text-secondary">Supervisor: <span class="text-white fw-semibold">{{ line.supervisorName }}</span></small>
+              </div>
+              <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
+                Target: {{ line.hourlyTargetPieces }} pcs/hr
+              </span>
+            </div>
+
+            <!-- Quick Production Entry -->
+            <div class="card bg-dark border-secondary border-opacity-25 p-3 rounded-3 mb-3">
+              <small class="text-uppercase text-secondary fw-bold mb-2 d-block" style="font-size: 0.65rem;">Log Hourly Inspection Output</small>
+              <div class="row g-2">
+                <div class="col-12">
+                  <input [(ngModel)]="operatorName" type="text" placeholder="Operator Name" class="form-control form-control-dark form-control-sm" />
+                </div>
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.65rem;">Passed (pcs)</small>
+                  <input [(ngModel)]="passedPcs" type="number" class="form-control form-control-dark form-control-sm text-success fw-bold" />
+                </div>
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.65rem;">Rework (pcs)</small>
+                  <input [(ngModel)]="reworkPcs" type="number" class="form-control form-control-dark form-control-sm text-warning fw-bold" />
+                </div>
+                <div class="col-4">
+                  <small class="text-secondary d-block" style="font-size: 0.65rem;">Reject (pcs)</small>
+                  <input [(ngModel)]="rejectPcs" type="number" class="form-control form-control-dark form-control-sm text-danger fw-bold" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button (click)="submitOutput(line.id!)" class="btn btn-success btn-sm fw-bold w-100 py-2">
+            Record Line Inspection
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Production Logs Table -->
+  <div class="card card-dark border-secondary border-opacity-25 overflow-hidden shadow-sm">
+    <div class="p-3 border-bottom border-secondary border-opacity-25">
+      <h6 class="fw-bold text-white mb-0">Recent Stitching &amp; Quality Inspection Logs</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-dark-custom table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th class="px-4 py-3">Line Name</th>
+            <th class="px-4 py-3">Operator Name</th>
+            <th class="px-4 py-3">Bundle Code</th>
+            <th class="px-4 py-3 text-success">Passed</th>
+            <th class="px-4 py-3 text-warning">Rework</th>
+            <th class="px-4 py-3 text-danger">Reject</th>
+            <th class="px-4 py-3">Logged Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of logs(); track log.id) {
+            <tr>
+              <td class="px-4 py-3 fw-semibold text-white">{{ log.sewingLine.lineName }}</td>
+              <td class="px-4 py-3">{{ log.operatorName }}</td>
+              <td class="px-4 py-3 font-monospace small text-primary">{{ log.bundle.bundleCode }}</td>
+              <td class="px-4 py-3 fw-bold text-success">{{ log.passedPieces }}</td>
+              <td class="px-4 py-3 text-warning">{{ log.reworkedPieces }}</td>
+              <td class="px-4 py-3 text-danger">{{ log.rejectedPieces }}</td>
+              <td class="px-4 py-3 text-secondary small">{{ log.loggedAt }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

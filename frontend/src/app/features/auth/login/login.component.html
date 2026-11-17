@@ -1,0 +1,104 @@
+<div class="min-vh-100 d-flex flex-column justify-content-center align-items-center p-3 position-relative" style="background-color: var(--app-bg);">
+  <!-- Login Card Container -->
+  <div class="card card-dark shadow-lg border-secondary border-opacity-25 p-4 p-md-5" style="width: 100%; max-width: 440px;">
+    <!-- Brand Header -->
+    <div class="text-center mb-4">
+      <div class="d-inline-flex align-items-center justify-content-center bg-info text-dark fw-bold rounded-4 shadow-sm mb-3" style="width: 56px; height: 56px; font-size: 1.75rem;">
+        Y
+      </div>
+      <h3 class="fw-bold text-white mb-1">Yarn Manager</h3>
+      <p class="text-uppercase text-info fw-semibold mb-1" style="font-size: 0.75rem; letter-spacing: 0.1em;">Tiruppur Knitwear &amp; Garments ERP</p>
+      <small class="text-secondary">Sign in to access factory floor production lines</small>
+    </div>
+
+    <!-- Error Banner -->
+    @if (errorMessage()) {
+      <div class="alert alert-danger d-flex align-items-center gap-2 py-2 px-3 rounded-3 small mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Login Form -->
+    <form (ngSubmit)="onSubmit()" class="d-flex flex-column gap-3">
+      <div>
+        <label class="form-label text-secondary small fw-semibold mb-1">
+          <i class="bi bi-person me-1"></i>Employee ID / Username
+        </label>
+        <input
+          [(ngModel)]="credentials.username"
+          name="username"
+          type="text"
+          required
+          placeholder="e.g. admin or supervisor"
+          class="form-control form-control-dark py-2 px-3"
+        />
+      </div>
+
+      <div>
+        <label class="form-label text-secondary small fw-semibold mb-1">
+          <i class="bi bi-lock me-1"></i>Password
+        </label>
+        <input
+          [(ngModel)]="credentials.password"
+          name="password"
+          type="password"
+          required
+          placeholder="••••••••"
+          class="form-control form-control-dark py-2 px-3"
+        />
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="isLoading()"
+        class="btn btn-info fw-bold py-2 mt-2 rounded-3 d-flex align-items-center justify-content-center gap-2"
+      >
+        @if (isLoading()) {
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          <span>Signing in...</span>
+        } @else {
+          <i class="bi bi-box-arrow-in-right"></i>
+          <span>Access Factory Dashboard</span>
+        }
+      </button>
+    </form>
+
+    <!-- Quick Demo Accounts for Factory Roles -->
+    <div class="pt-4 mt-4 border-top border-secondary border-opacity-25">
+      <p class="text-secondary fw-semibold text-center mb-2 text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Quick Fill Demo Roles:</p>
+      <div class="row g-2">
+        <div class="col-4">
+          <button
+            type="button"
+            (click)="setDemoRole('admin')"
+            class="btn btn-outline-secondary w-100 py-1 small text-white"
+            style="font-size: 0.75rem;"
+          >
+            👑 Admin
+          </button>
+        </div>
+        <div class="col-4">
+          <button
+            type="button"
+            (click)="setDemoRole('supervisor')"
+            class="btn btn-outline-secondary w-100 py-1 small text-white"
+            style="font-size: 0.75rem;"
+          >
+            ⚙️ Super
+          </button>
+        </div>
+        <div class="col-4">
+          <button
+            type="button"
+            (click)="setDemoRole('qc')"
+            class="btn btn-outline-secondary w-100 py-1 small text-white"
+            style="font-size: 0.75rem;"
+          >
+            🔍 QC
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
