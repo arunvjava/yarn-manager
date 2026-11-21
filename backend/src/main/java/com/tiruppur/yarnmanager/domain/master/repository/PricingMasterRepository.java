@@ -14,10 +14,10 @@ import java.util.Optional;
 public interface PricingMasterRepository extends JpaRepository<PricingMaster, Long> {
     Optional<PricingMaster> findByPriceCode(String priceCode);
     List<PricingMaster> findByActiveTrue();
-    List<PricingMaster> findByProcessOrItemTypeAndActiveTrue(String processOrItemType);
+    List<PricingMaster> findByProcessTypeAndActiveTrue(String processType);
     boolean existsByPriceCode(String priceCode);
 
-    @Query("SELECT p FROM PricingMaster p WHERE p.processOrItemType = :processType " +
+    @Query("SELECT p FROM PricingMaster p WHERE p.processType = :processType " +
            "AND p.categoryOrSpec = :category " +
            "AND p.active = true " +
            "AND (p.effectiveFrom <= :date AND (p.effectiveTo IS NULL OR p.effectiveTo >= :date)) " +

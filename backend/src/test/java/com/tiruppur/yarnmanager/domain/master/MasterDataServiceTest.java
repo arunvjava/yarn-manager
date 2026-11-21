@@ -95,7 +95,7 @@ class MasterDataServiceTest {
     void shouldResolveEffectivePricingRate() {
         PricingMaster darkShadeRate = PricingMaster.builder()
                 .priceCode("RATE-DYE-DARK")
-                .processOrItemType("DYEING_JOBWORK")
+                .processType("DYEING_JOBWORK")
                 .categoryOrSpec("Dark Shade")
                 .uomCode("KG")
                 .baseRate(new BigDecimal("95.00"))

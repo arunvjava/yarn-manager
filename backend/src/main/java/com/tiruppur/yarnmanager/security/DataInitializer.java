@@ -164,55 +164,55 @@ public class DataInitializer implements CommandLineRunner {
             LocalDate now = LocalDate.now();
             List<PricingMaster> rateCards = List.of(
                 // Knitting Job-Work Rates
-                PricingMaster.builder().priceCode("RATE-KNIT-SJ-24").processOrItemType("KNITTING_JOBWORK")
+                PricingMaster.builder().priceCode("RATE-KNIT-SJ-24").processType("KNITTING_JOBWORK")
                     .categoryOrSpec("Single Jersey 24GG").uomCode("KG").baseRate(new BigDecimal("18.00"))
                     .currency("INR").effectiveFrom(now).notes("Standard 180 GSM circular knitting").active(true).build(),
 
-                PricingMaster.builder().priceCode("RATE-KNIT-RIB-18").processOrItemType("KNITTING_JOBWORK")
+                PricingMaster.builder().priceCode("RATE-KNIT-RIB-18").processType("KNITTING_JOBWORK")
                     .categoryOrSpec("1x1 Rib 18GG").uomCode("KG").baseRate(new BigDecimal("22.00"))
                     .currency("INR").effectiveFrom(now).notes("Neck rib & cuff knit").active(true).build(),
 
-                PricingMaster.builder().priceCode("RATE-KNIT-INT-28").processOrItemType("KNITTING_JOBWORK")
+                PricingMaster.builder().priceCode("RATE-KNIT-INT-28").processType("KNITTING_JOBWORK")
                     .categoryOrSpec("Interlock 28GG").uomCode("KG").baseRate(new BigDecimal("25.00"))
                     .currency("INR").effectiveFrom(now).notes("Heavy interlock double jersey").active(true).build(),
 
                 // Dyeing Job-Work Rates (by shade depth)
-                PricingMaster.builder().priceCode("RATE-DYE-LIGHT").processOrItemType("DYEING_JOBWORK")
+                PricingMaster.builder().priceCode("RATE-DYE-LIGHT").processType("DYEING_JOBWORK")
                     .categoryOrSpec("Light Shade (Pastel / Off-White)").uomCode("KG").baseRate(new BigDecimal("55.00"))
                     .currency("INR").effectiveFrom(now).notes("Low dye concentration").active(true).build(),
 
-                PricingMaster.builder().priceCode("RATE-DYE-MED").processOrItemType("DYEING_JOBWORK")
+                PricingMaster.builder().priceCode("RATE-DYE-MED").processType("DYEING_JOBWORK")
                     .categoryOrSpec("Medium Shade (Sky Blue / Coral)").uomCode("KG").baseRate(new BigDecimal("75.00"))
                     .currency("INR").effectiveFrom(now).notes("Medium depth shade").active(true).build(),
 
-                PricingMaster.builder().priceCode("RATE-DYE-DARK").processOrItemType("DYEING_JOBWORK")
+                PricingMaster.builder().priceCode("RATE-DYE-DARK").processType("DYEING_JOBWORK")
                     .categoryOrSpec("Dark Shade (Navy / Olive / Maroon)").uomCode("KG").baseRate(new BigDecimal("95.00"))
                     .currency("INR").effectiveFrom(now).notes("Standard dark shade reactive dyeing").active(true).build(),
 
-                PricingMaster.builder().priceCode("RATE-DYE-BLACK").processOrItemType("DYEING_JOBWORK")
+                PricingMaster.builder().priceCode("RATE-DYE-BLACK").processType("DYEING_JOBWORK")
                     .categoryOrSpec("Jet Black (Reactive)").uomCode("KG").baseRate(new BigDecimal("110.00"))
                     .currency("INR").effectiveFrom(now).notes("Extra depth reactive black with wash-off").active(true).build(),
 
                 // Finishing & Bio-Polish
-                PricingMaster.builder().priceCode("RATE-BIO-POLISH").processOrItemType("FINISHING")
+                PricingMaster.builder().priceCode("RATE-BIO-POLISH").processType("FINISHING")
                     .categoryOrSpec("Enzyme Bio-Polishing").uomCode("KG").baseRate(new BigDecimal("16.00"))
                     .currency("INR").effectiveFrom(now).notes("Cellulase enzyme treatment for zero fuzz").active(true).build(),
 
                 // Sewing Cut-to-Make (CM) Rates
-                PricingMaster.builder().priceCode("RATE-SEW-CREW").processOrItemType("SEWING_CM")
+                PricingMaster.builder().priceCode("RATE-SEW-CREW").processType("SEWING_CM")
                     .categoryOrSpec("Basic Crew Neck T-Shirt").uomCode("PCS").baseRate(new BigDecimal("18.50"))
                     .currency("INR").effectiveFrom(now).notes("Standard 4-thread overlock + flatlock hem").active(true).build(),
 
-                PricingMaster.builder().priceCode("RATE-SEW-POLO").processOrItemType("SEWING_CM")
+                PricingMaster.builder().priceCode("RATE-SEW-POLO").processType("SEWING_CM")
                     .categoryOrSpec("Pique Polo Tee with Placket").uomCode("PCS").baseRate(new BigDecimal("34.00"))
                     .currency("INR").effectiveFrom(now).notes("Rib collar, box placket, 2-button attachment").active(true).build(),
 
                 // Raw Material Yarn Purchase Rates
-                PricingMaster.builder().priceCode("RATE-YARN-30SC").processOrItemType("YARN_PURCHASE")
+                PricingMaster.builder().priceCode("RATE-YARN-30SC").processType("YARN_PURCHASE")
                     .categoryOrSpec("30s Combed Cotton Cone Yarn").uomCode("KG").baseRate(new BigDecimal("285.00"))
                     .currency("INR").effectiveFrom(now).notes("KPR / Ramco Mill standard 30s combed").active(true).build(),
 
-                PricingMaster.builder().priceCode("RATE-YARN-34SL").processOrItemType("YARN_PURCHASE")
+                PricingMaster.builder().priceCode("RATE-YARN-34SL").processType("YARN_PURCHASE")
                     .categoryOrSpec("34s Lycra Spun Yarn (95/5)").uomCode("KG").baseRate(new BigDecimal("340.00"))
                     .currency("INR").effectiveFrom(now).notes("Core spun Lycra for stretch tees").active(true).build()
             );

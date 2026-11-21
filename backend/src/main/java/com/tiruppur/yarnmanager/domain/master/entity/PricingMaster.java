@@ -24,8 +24,8 @@ public class PricingMaster {
     @Column(nullable = false, unique = true, length = 50)
     private String priceCode; // e.g. RATE-KNIT-SJ-24, RATE-DYE-DARK, RATE-YARN-30S
 
-    @Column(nullable = false, length = 100)
-    private String processOrItemType; // KNITTING_JOBWORK, DYEING_JOBWORK, YARN_PURCHASE, SEWING_CM, FABRIC_PRINTING
+    @Column(name = "process_or_item_type", nullable = false, length = 100)
+    private String processType; // KNITTING_JOBWORK, DYEING_JOBWORK, YARN_PURCHASE, SEWING_CM, FABRIC_PRINTING
 
     @Column(nullable = false, length = 150)
     private String categoryOrSpec; // Single Jersey 24GG, Dark Shade (Navy/Black), Bio-Polish, 30s Combed Cotton

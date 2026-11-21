@@ -52,7 +52,7 @@ describe('MasterDataService', () => {
   it('should resolve effective rate for dyeing', () => {
     const mockRate: PricingMaster = {
       priceCode: 'RATE-DYE-DARK',
-      processOrItemType: 'DYEING_JOBWORK',
+      processType: 'DYEING_JOBWORK',
       categoryOrSpec: 'Dark Shade',
       uomCode: 'KG',
       baseRate: 95,

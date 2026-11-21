@@ -117,7 +117,7 @@ public class MasterDataService {
     @Transactional(readOnly = true)
     public List<PricingMaster> getAllPrices(Boolean activeOnly, String processType) {
         if (processType != null && !processType.isBlank()) {
-            return pricingRepository.findByProcessOrItemTypeAndActiveTrue(processType.toUpperCase().trim());
+            return pricingRepository.findByProcessTypeAndActiveTrue(processType.toUpperCase().trim());
         }
         if (Boolean.TRUE.equals(activeOnly)) {
             return pricingRepository.findByActiveTrue();

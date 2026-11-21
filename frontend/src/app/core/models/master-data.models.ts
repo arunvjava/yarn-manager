@@ -30,7 +30,7 @@ export interface CustomerMaster {
 export interface PricingMaster {
   id?: number;
   priceCode: string;
-  processOrItemType: string; // 'KNITTING_JOBWORK' | 'DYEING_JOBWORK' | 'SEWING_CM' | 'YARN_PURCHASE' | 'FINISHING'
+  processType: string; // 'KNITTING_JOBWORK' | 'DYEING_JOBWORK' | 'SEWING_CM' | 'YARN_PURCHASE' | 'FINISHING'
   categoryOrSpec: string;
   uomCode: string;
   baseRate: number;
