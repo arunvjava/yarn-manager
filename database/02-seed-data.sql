@@ -10,13 +10,42 @@ INSERT INTO users (username, password, full_name, role, active) VALUES
 ('yarn_mgr', '$2a$10$sJLlMr2xNHvAt4aZx8B9O.QynOyLMlst/k95uQBy1oQrEMQ5O/jWm', 'Palanisamy (Yarn Procurement Head)', 'ROLE_YARN_MANAGER', true),
 ('dispatch_officer', '$2a$10$bol.LvJ2VNJTZ.28.B2zE.3LthDnJGHFJxvBNz36sj.DBwJTzsWJi', 'Karthik (Logistics & Shipping Officer)', 'ROLE_DISPATCH_OFFICER', true);
 
--- 1. Buyers
-INSERT INTO buyers (name, buyer_code, country, contact_person, contact_email) VALUES
-('Zara Sourcing Europe', 'BUYER-ZARA-01', 'Spain', 'Carlos Mendez', 'carlos@inditex.com'),
-('Decathlon Sports India', 'BUYER-DECATH-02', 'France', 'Anand Kumar', 'anand.k@decathlon.in'),
-('Myntra Fashion Brands', 'BUYER-MYNTRA-03', 'India', 'Priya Sharma', 'priya.s@myntra.com');
+-- 1. Master Data: Unit of Measure (UOM)
+INSERT INTO uom_master (uom_code, uom_name, category, base_uom, conversion_factor, decimal_places, active) VALUES
+('KG', 'Kilogram', 'WEIGHT', true, 1.000000, 2, true),
+('BAG', 'Yarn Bag (100 lbs)', 'WEIGHT', false, 45.360000, 2, true),
+('BAG_50', 'Yarn Bag (50 kg)', 'WEIGHT', false, 50.000000, 2, true),
+('LBS', 'Pound (lb)', 'WEIGHT', false, 0.453592, 3, true),
+('PCS', 'Pieces', 'COUNT', true, 1.000000, 0, true),
+('DOZ', 'Dozen (12 pcs)', 'COUNT', false, 12.000000, 1, true),
+('ROLL', 'Fabric Roll (~25 kg)', 'PACKAGING', false, 25.000000, 2, true),
+('CONE', 'Yarn Cone (~1.89 kg)', 'PACKAGING', false, 1.890000, 2, true),
+('CTN', 'Carton Box', 'PACKAGING', true, 1.000000, 0, true),
+('MTR', 'Meter', 'LENGTH', true, 1.000000, 2, true),
+('YDS', 'Yard', 'LENGTH', false, 0.914400, 2, true);
 
--- 2. Production Orders
+-- 2. Master Data: Customers / Buyers
+INSERT INTO buyers (name, buyer_code, brand_names, country, currency, payment_terms, tax_id_gstin, contact_person, contact_email, contact_phone, billing_address, shipping_port, tolerance_percentage, active) VALUES
+('Zara Sourcing Europe (Inditex Group)', 'BUY-ZARA-01', 'Zara Man, Zara Kids, TRF', 'Spain', 'EUR', 'LC at 60 Days from BL Date', 'ESB15075062', 'Carlos Mendez', 'carlos@inditex.com', '+34 981 185 400', 'Avenida de la Diputacion, Edificio Inditex, 15142 Arteixo, Spain', 'Tuticorin Port (VOCPT) -> Port of Valencia', 3.00, true),
+('Decathlon Sports India Pvt Ltd', 'BUY-DECATH-02', 'Domyos, Kalenji, Quechua', 'France', 'INR', 'Net 30 Days from Invoice', '29AABCD1234F1Z5', 'Anand Kumar', 'anand.k@decathlon.in', '+91 80 4646 7000', 'Survey No 78/10, Anekal Taluk, Bengaluru 562106', 'Chennai Port / Domestic Hub', 5.00, true),
+('Myntra Designs Private Limited', 'BUY-MYNTRA-03', 'Roadster, HRX, Mast & Harbour', 'India', 'INR', 'Net 45 Days', '29AAACM3210G1ZU', 'Priya Sharma', 'priya.s@myntra.com', '+91 80 4354 0000', 'Embassy Tech Village, Outer Ring Road, Bengaluru 560103', 'Tiruppur Hub Dispatch', 5.00, true);
+
+-- 3. Master Data: Pricing Rate Cards (Job-work & Material Pricing)
+INSERT INTO pricing_master (price_code, process_or_item_type, category_or_spec, uom_code, base_rate, currency, effective_from, notes, active) VALUES
+('RATE-KNIT-SJ-24', 'KNITTING_JOBWORK', 'Single Jersey 24GG', 'KG', 18.00, 'INR', '2026-01-01', 'Standard 180 GSM circular knitting', true),
+('RATE-KNIT-RIB-18', 'KNITTING_JOBWORK', '1x1 Rib 18GG', 'KG', 22.00, 'INR', '2026-01-01', 'Neck rib & cuff knit', true),
+('RATE-KNIT-INT-28', 'KNITTING_JOBWORK', 'Interlock 28GG', 'KG', 25.00, 'INR', '2026-01-01', 'Heavy interlock double jersey', true),
+('RATE-DYE-LIGHT', 'DYEING_JOBWORK', 'Light Shade (Pastel / Off-White)', 'KG', 55.00, 'INR', '2026-01-01', 'Low dye concentration', true),
+('RATE-DYE-MED', 'DYEING_JOBWORK', 'Medium Shade (Sky Blue / Coral)', 'KG', 75.00, 'INR', '2026-01-01', 'Medium depth shade', true),
+('RATE-DYE-DARK', 'DYEING_JOBWORK', 'Dark Shade (Navy / Olive / Maroon)', 'KG', 95.00, 'INR', '2026-01-01', 'Standard dark shade reactive dyeing', true),
+('RATE-DYE-BLACK', 'DYEING_JOBWORK', 'Jet Black (Reactive)', 'KG', 110.00, 'INR', '2026-01-01', 'Extra depth reactive black with wash-off', true),
+('RATE-BIO-POLISH', 'FINISHING', 'Enzyme Bio-Polishing', 'KG', 16.00, 'INR', '2026-01-01', 'Cellulase enzyme treatment for zero fuzz', true),
+('RATE-SEW-CREW', 'SEWING_CM', 'Basic Crew Neck T-Shirt', 'PCS', 18.50, 'INR', '2026-01-01', 'Standard 4-thread overlock + flatlock hem', true),
+('RATE-SEW-POLO', 'SEWING_CM', 'Pique Polo Tee with Placket', 'PCS', 34.00, 'INR', '2026-01-01', 'Rib collar, box placket, 2-button attachment', true),
+('RATE-YARN-30SC', 'YARN_PURCHASE', '30s Combed Cotton Cone Yarn', 'KG', 285.00, 'INR', '2026-01-01', 'KPR / Ramco Mill standard 30s combed', true),
+('RATE-YARN-34SL', 'YARN_PURCHASE', '34s Lycra Spun Yarn (95/5)', 'KG', 340.00, 'INR', '2026-01-01', 'Core spun Lycra for stretch tees', true);
+
+-- 4. Production Orders
 INSERT INTO production_orders (order_number, buyer_id, style_name, target_gsm, color_shade, total_quantity, delivery_date, status) VALUES
 ('PO-2026-TRP-001', 1, 'Men Bio-Wash Crew Neck T-Shirt', 180, 'Navy Blue (19-4024 TPX)', 10000, '2026-12-15', 'IN_PROGRESS'),
 ('PO-2026-TRP-002', 2, 'Dry-Fit Performance Gym Tee', 160, 'Anthracite Grey (19-3908 TPX)', 5000, '2026-12-28', 'PLANNED'),

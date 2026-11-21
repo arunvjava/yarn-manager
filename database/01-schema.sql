@@ -4,6 +4,8 @@
 -- ====================================================================
 
 -- Clean up if exists
+DROP TABLE IF EXISTS pricing_master CASCADE;
+DROP TABLE IF EXISTS uom_master CASCADE;
 DROP TABLE IF EXISTS carton_packings CASCADE;
 DROP TABLE IF EXISTS sewing_production_log CASCADE;
 DROP TABLE IF EXISTS sewing_lines CASCADE;
@@ -28,14 +30,53 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 1. BUYER MASTER & PRODUCTION ORDERS
+-- 1. MASTER DATA: UNIT OF MEASURE (UOM)
+CREATE TABLE uom_master (
+    id BIGSERIAL PRIMARY KEY,
+    uom_code VARCHAR(20) UNIQUE NOT NULL,        -- 'KG', 'BAG', 'PCS', 'MTR', 'ROLL', 'CONE', 'CTN', 'DOZ'
+    uom_name VARCHAR(100) NOT NULL,               -- 'Kilogram', 'Yarn Bag (100 lbs/45.36kg)', 'Pieces'
+    category VARCHAR(50) NOT NULL,                -- 'WEIGHT', 'COUNT', 'LENGTH', 'PACKAGING'
+    base_uom BOOLEAN DEFAULT FALSE,
+    conversion_factor NUMERIC(12, 6) DEFAULT 1.0, -- Multiplier to convert to base unit
+    decimal_places INT DEFAULT 2,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. MASTER DATA: COMPREHENSIVE CUSTOMER / BUYER MASTER
 CREATE TABLE buyers (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    buyer_code VARCHAR(50) UNIQUE NOT NULL,
-    country VARCHAR(100) DEFAULT 'India',
+    name VARCHAR(150) NOT NULL,                  -- Legal Corporate Name
+    buyer_code VARCHAR(50) UNIQUE NOT NULL,      -- e.g., 'BUY-ZARA-01'
+    brand_names VARCHAR(200),                     -- Brands under buyer (e.g. 'Zara Man, Zara Kids')
+    country VARCHAR(100) NOT NULL DEFAULT 'India',
+    currency VARCHAR(10) NOT NULL DEFAULT 'USD', -- USD, EUR, GBP, INR
+    payment_terms VARCHAR(100),                   -- 'LC 60 Days', 'Net 30 Days', 'CAD'
+    tax_id_gstin VARCHAR(50),                     -- GSTIN / VAT ID
     contact_person VARCHAR(100),
     contact_email VARCHAR(150),
+    contact_phone VARCHAR(50),
+    billing_address TEXT,
+    shipping_port VARCHAR(150),                   -- Port of destination (e.g. 'Tuticorin Port / Valencia')
+    tolerance_percentage NUMERIC(5, 2) DEFAULT 5.00, -- Shipping quantity tolerance (+/- 5%)
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. MASTER DATA: PRICING RATE CARDS
+CREATE TABLE pricing_master (
+    id BIGSERIAL PRIMARY KEY,
+    price_code VARCHAR(50) UNIQUE NOT NULL,       -- e.g. 'RATE-KNIT-SJ-24', 'RATE-DYE-DARK'
+    process_or_item_type VARCHAR(100) NOT NULL,   -- 'KNITTING_JOBWORK', 'DYEING_JOBWORK', 'SEWING_CM'
+    category_or_spec VARCHAR(150) NOT NULL,       -- 'Single Jersey 24GG', 'Dark Shade', 'Crew Tee'
+    uom_code VARCHAR(20) NOT NULL,                -- 'KG', 'PCS', 'MTR'
+    base_rate NUMERIC(12, 2) NOT NULL,            -- Base amount
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    buyer_id BIGINT REFERENCES buyers(id) ON DELETE SET NULL, -- Optional buyer-specific rate
+    effective_from DATE NOT NULL,
+    effective_to DATE,
+    notes VARCHAR(500),
+    active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
