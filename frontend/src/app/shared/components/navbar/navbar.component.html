@@ -11,10 +11,23 @@
     </span>
   </div>
 
-  <!-- Right User Profile & Logout -->
+  <!-- Right Actions: Theme Toggle, Profile & Logout -->
   <div class="d-flex align-items-center gap-3">
+    <!-- Theme Switcher Button -->
+    <button
+      (click)="themeService.toggleTheme()"
+      class="btn btn-sm btn-outline-secondary rounded-3 d-flex align-items-center gap-2 px-3 py-1.5"
+      [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      [title]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+    >
+      <i class="bi" [ngClass]="themeService.isDark() ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-primary'"></i>
+      <span class="small fw-semibold d-none d-md-inline">
+        {{ themeService.isDark() ? 'Light Mode' : 'Dark Mode' }}
+      </span>
+    </button>
+
     @if (authService.currentUser(); as user) {
-      <div class="text-end">
+      <div class="text-end d-none d-sm-block">
         <p class="mb-0 fw-semibold text-white small">{{ user.fullName }}</p>
         <span class="badge bg-teal bg-opacity-25 text-info text-uppercase fw-bold" style="font-size: 0.65rem;">
           {{ user.role }}
@@ -22,7 +35,7 @@
       </div>
       <button (click)="logout()" class="btn btn-sm btn-outline-danger rounded-3 d-flex align-items-center gap-2">
         <i class="bi bi-box-arrow-right"></i>
-        <span>Logout</span>
+        <span class="d-none d-md-inline">Logout</span>
       </button>
     }
   </div>

@@ -8,19 +8,62 @@
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
-:root {
+/* ====================================================================
+   THEME DESIGN SYSTEM (LIGHT & DARK MODES)
+   ==================================================================== */
+
+:root,
+[data-bs-theme="dark"] {
   --app-bg: #0b1120;
   --app-card-bg: #111827;
   --app-sidebar-bg: #0f172a;
   --app-border: #1f2937;
+  --app-border-subtle: rgba(255, 255, 255, 0.1);
+  --app-text: #f1f5f9;
+  --app-text-muted: #94a3b8;
+  --app-inner-card: #0b1120;
+  --app-inner-border: #1e293b;
+  --app-table-striped: #162032;
+  --app-table-hover: #1e293b;
+  --app-input-bg: #0b1120;
+  --app-input-border: #334155;
+  --app-input-color: #f8fafc;
+  --app-nav-hover: #1e293b;
+  --app-nav-active-bg: rgba(13, 148, 136, 0.15);
+  --app-nav-active-color: #2dd4bf;
+  --app-scrollbar-thumb: #334155;
+  --app-scrollbar-track: #0f172a;
+}
+
+[data-bs-theme="light"] {
+  --app-bg: #f8fafc;
+  --app-card-bg: #ffffff;
+  --app-sidebar-bg: #ffffff;
+  --app-border: #e2e8f0;
+  --app-border-subtle: rgba(0, 0, 0, 0.08);
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+  --app-inner-card: #f8fafc;
+  --app-inner-border: #e2e8f0;
+  --app-table-striped: #f8fafc;
+  --app-table-hover: #f1f5f9;
+  --app-input-bg: #ffffff;
+  --app-input-border: #cbd5e1;
+  --app-input-color: #0f172a;
+  --app-nav-hover: #f1f5f9;
+  --app-nav-active-bg: rgba(13, 148, 136, 0.12);
+  --app-nav-active-color: #0d9488;
+  --app-scrollbar-thumb: #cbd5e1;
+  --app-scrollbar-track: #f1f5f9;
 }
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: var(--app-bg);
-  color: #f1f5f9;
+  background-color: var(--app-bg) !important;
+  color: var(--app-text) !important;
   margin: 0;
   padding: 0;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Custom Scrollbars */
@@ -29,63 +72,136 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: var(--app-scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: var(--app-scrollbar-thumb);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #94a3b8;
 }
 
-/* Dark themed card & table adjustments */
-.card-dark {
-  background-color: var(--app-card-bg);
-  border: 1px solid var(--app-border);
+/* Theme Adaptable Cards & Containers */
+.card-dark,
+.card-theme {
+  background-color: var(--app-card-bg) !important;
+  border: 1px solid var(--app-border) !important;
   border-radius: 1rem;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
-.table-dark-custom {
+/* Inner card blocks (e.g. parameter grids inside cards) */
+.card-dark .card.bg-dark,
+.card-theme .card.bg-dark,
+[data-bs-theme="light"] .card.bg-dark {
+  background-color: var(--app-inner-card) !important;
+  border: 1px solid var(--app-inner-border) !important;
+  color: var(--app-text) !important;
+}
+
+/* Tables */
+.table-dark-custom,
+.table-theme {
   --bs-table-bg: var(--app-card-bg);
-  --bs-table-striped-bg: #162032;
-  --bs-table-hover-bg: #1e293b;
-  --bs-table-border-color: #1e293b;
-  color: #e2e8f0;
+  --bs-table-striped-bg: var(--app-table-striped);
+  --bs-table-hover-bg: var(--app-table-hover);
+  --bs-table-border-color: var(--app-inner-border);
+  color: var(--app-text);
 }
 
-.table-dark-custom thead th {
-  background-color: #0f172a;
-  color: #94a3b8;
+.table-dark-custom thead th,
+.table-theme thead th {
+  background-color: var(--app-sidebar-bg) !important;
+  color: var(--app-text-muted) !important;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid var(--app-inner-border);
 }
 
-/* Input styles */
-.form-control-dark {
-  background-color: #0b1120 !important;
-  border: 1px solid #334155 !important;
-  color: #f8fafc !important;
+/* Input & Select Controls */
+.form-control-dark,
+.form-control-theme {
+  background-color: var(--app-input-bg) !important;
+  border: 1px solid var(--app-input-border) !important;
+  color: var(--app-input-color) !important;
   border-radius: 0.75rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.form-control-dark:focus {
+.form-control-dark::placeholder,
+.form-control-theme::placeholder {
+  color: var(--app-text-muted);
+}
+
+.form-control-dark:focus,
+.form-control-theme:focus {
   border-color: #0d9488 !important;
   box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
 }
 
-.form-select-dark {
-  background-color: #0b1120 !important;
-  border: 1px solid #334155 !important;
-  color: #f8fafc !important;
+.form-select-dark,
+.form-select-theme {
+  background-color: var(--app-input-bg) !important;
+  border: 1px solid var(--app-input-border) !important;
+  color: var(--app-input-color) !important;
   border-radius: 0.75rem;
 }
 
+/* Nav links in sidebar */
+.nav-pills .nav-link {
+  color: var(--app-text-muted);
+  transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link:hover {
+  background-color: var(--app-nav-hover);
+  color: var(--app-text);
+}
+
+.nav-pills .nav-link.active {
+  background-color: var(--app-nav-active-bg) !important;
+  color: var(--app-nav-active-color) !important;
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  font-weight: 600;
+}
+
+/* Badge styling */
 .badge-custom {
   padding: 0.35em 0.65em;
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 9999px;
+}
+
+/* Theme-adaptive text overrides for light mode */
+[data-bs-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+
+[data-bs-theme="light"] .text-white-50 {
+  color: #64748b !important;
+}
+
+[data-bs-theme="light"] .text-light {
+  color: #1e293b !important;
+}
+
+[data-bs-theme="light"] .btn-close-white {
+  filter: none !important;
+}
+
+[data-bs-theme="light"] .border-secondary {
+  border-color: var(--app-border) !important;
+}
+
+[data-bs-theme="light"] .badge.bg-dark {
+  background-color: #e2e8f0 !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-bs-theme="light"] .progress {
+  background-color: #e2e8f0 !important;
 }

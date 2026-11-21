@@ -5,6 +5,7 @@ import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { UserSession } from '../../../core/models/auth.models';
 
 describe('LoginComponent', () => {
@@ -20,6 +21,7 @@ describe('LoginComponent', () => {
       imports: [LoginComponent],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
+        ThemeService,
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([])

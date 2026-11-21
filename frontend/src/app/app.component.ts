@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { ThemeService } from './core/services/theme.service';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 
@@ -14,4 +15,5 @@ import { SidebarComponent } from './shared/components/sidebar/sidebar.component'
 export class AppComponent {
   title = 'Yarn Manager - Tiruppur Knitwear & Garment ERP';
   authService = inject(AuthService);
+  themeService = inject(ThemeService);
 }

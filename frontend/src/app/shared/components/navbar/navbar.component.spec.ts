@@ -4,6 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { NavbarComponent } from './navbar.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -14,6 +15,7 @@ describe('NavbarComponent', () => {
       imports: [NavbarComponent],
       providers: [
         AuthService,
+        ThemeService,
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([])

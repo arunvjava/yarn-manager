@@ -4,6 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { AppComponent } from './app.component';
 import { AuthService } from './core/services/auth.service';
+import { ThemeService } from './core/services/theme.service';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -11,6 +12,7 @@ describe('AppComponent', () => {
       imports: [AppComponent],
       providers: [
         AuthService,
+        ThemeService,
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([])

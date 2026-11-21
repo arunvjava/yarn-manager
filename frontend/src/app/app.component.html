@@ -1,4 +1,4 @@
-<div class="min-vh-100" style="background-color: var(--app-bg);">
+<div class="min-vh-100" [attr.data-bs-theme]="themeService.currentTheme()" style="background-color: var(--app-bg); color: var(--app-text);">
   @if (authService.isAuthenticated()) {
     <!-- Full Authenticated App Layout (Sidebar + Top Navbar + Routed Content) -->
     <div class="d-flex vh-100 overflow-hidden">
