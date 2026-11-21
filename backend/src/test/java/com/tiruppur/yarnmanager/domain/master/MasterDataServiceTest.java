@@ -1,8 +1,12 @@
 package com.tiruppur.yarnmanager.domain.master;
 
+import com.tiruppur.yarnmanager.domain.master.entity.CompanyMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.PricingMaster;
+import com.tiruppur.yarnmanager.domain.master.entity.ProductMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.UomMaster;
+import com.tiruppur.yarnmanager.domain.master.repository.CompanyMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.PricingMasterRepository;
+import com.tiruppur.yarnmanager.domain.master.repository.ProductMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.UomMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.service.MasterDataService;
 import com.tiruppur.yarnmanager.domain.order.entity.Buyer;
@@ -35,11 +39,62 @@ class MasterDataServiceTest {
     @Mock
     private PricingMasterRepository pricingRepository;
 
+    @Mock
+    private CompanyMasterRepository companyRepository;
+
+    @Mock
+    private ProductMasterRepository productRepository;
+
     private MasterDataService masterDataService;
 
     @BeforeEach
     void setUp() {
-        masterDataService = new MasterDataService(uomRepository, buyerRepository, pricingRepository);
+        masterDataService = new MasterDataService(
+                uomRepository, buyerRepository, pricingRepository, companyRepository, productRepository);
+    }
+
+    @Test
+    @DisplayName("Should save and retrieve company profile")
+    void shouldSaveCompanyProfile() {
+        CompanyMaster company = CompanyMaster.builder()
+                .companyCode("TTG-CORP-01")
+                .companyName("Tiruppur TexFlow Garments")
+                .gstin("33AAACT1234F1Z5")
+                .registeredAddress("SF No 124, Kangeyam Road, Tiruppur")
+                .isPrimary(true)
+                .active(true)
+                .build();
+
+        when(companyRepository.save(any(CompanyMaster.class))).thenReturn(company);
+
+        CompanyMaster saved = masterDataService.saveCompany(company);
+
+        assertNotNull(saved);
+        assertEquals("TTG-CORP-01", saved.getCompanyCode());
+        assertEquals("33AAACT1234F1Z5", saved.getGstin());
+    }
+
+    @Test
+    @DisplayName("Should save and retrieve garment product style")
+    void shouldSaveProductStyle() {
+        ProductMaster product = ProductMaster.builder()
+                .productCode("STY-CREW-180")
+                .styleName("Men Bio-Wash Crew Neck T-Shirt")
+                .category("MEN_ROUND_NECK")
+                .fabricType("Single Jersey")
+                .yarnCount("30s Combed Cotton")
+                .targetGsm(180)
+                .standardSmv(new BigDecimal("12.50"))
+                .active(true)
+                .build();
+
+        when(productRepository.save(any(ProductMaster.class))).thenReturn(product);
+
+        ProductMaster saved = masterDataService.saveProduct(product);
+
+        assertNotNull(saved);
+        assertEquals("STY-CREW-180", saved.getProductCode());
+        assertEquals(180, saved.getTargetGsm());
     }
 
     @Test

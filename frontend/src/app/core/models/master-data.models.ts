@@ -1,3 +1,38 @@
+export interface CompanyMaster {
+  id?: number;
+  companyName: string;
+  companyCode: string;
+  unitOrDivision?: string;
+  gstin: string;
+  pan?: string;
+  iecCode?: string;
+  registeredAddress: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
+  bankIfsc?: string;
+  primary?: boolean;
+  active: boolean;
+}
+
+export interface ProductMaster {
+  id?: number;
+  productCode: string;
+  styleName: string;
+  category: string; // 'MEN_ROUND_NECK' | 'MEN_POLO' | 'HOODIE' | 'JOGGERS' | 'WOMEN_TOP'
+  fabricType: string;
+  yarnCount: string;
+  targetGsm: number;
+  neckType?: string;
+  sleeveType?: string;
+  standardSmv?: number;
+  availableSizes?: string;
+  hsnCode?: string;
+  active: boolean;
+}
+
 export interface UomMaster {
   id?: number;
   uomCode: string; // 'KG' | 'BAG' | 'PCS' | 'MTR' | 'ROLL' | 'CONE' | 'CTN' | 'DOZ' | 'LBS' | 'YDS'

@@ -47,6 +47,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/packing/carton-packing.component').then(m => m.CartonPackingComponent)
   },
   {
+    path: 'master',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/master/master-data.component').then(m => m.MasterDataComponent)
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }

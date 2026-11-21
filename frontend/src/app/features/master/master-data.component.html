@@ -1,0 +1,637 @@
+<div class="container-fluid p-4">
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2">
+        <h3 class="fw-bold mb-0 text-body">Master Data Management Hub</h3>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">ERP Core</span>
+      </div>
+      <p class="text-secondary small mb-0 mt-1">Configure companies, garment products, customer accounts, units of measure, and process pricing.</p>
+    </div>
+
+    <!-- Quick Action / Refresh -->
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" (click)="loadAllMasters()" [disabled]="isLoading()">
+        <i class="bi bi-arrow-clockwise" [class.spin]="isLoading()"></i>
+        <span>Refresh Data</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  @if (successMessage()) {
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert">
+      <i class="bi bi-check-circle-fill fs-5"></i>
+      <div>{{ successMessage() }}</div>
+      <button type="button" class="btn-close" (click)="clearMessages()"></button>
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <div>{{ errorMessage() }}</div>
+      <button type="button" class="btn-close" (click)="clearMessages()"></button>
+    </div>
+  }
+
+  <!-- Master Tabs Navigation -->
+  <ul class="nav nav-pills mb-4 gap-2 border-bottom pb-3">
+    <li class="nav-item">
+      <button class="nav-link d-flex align-items-center gap-2 px-3 py-2 fw-semibold"
+              [class.active]="activeTab() === 'company'"
+              (click)="setTab('company')">
+        <i class="bi bi-building"></i>
+        <span>Company &amp; Units</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-body ms-1">{{ companies().length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link d-flex align-items-center gap-2 px-3 py-2 fw-semibold"
+              [class.active]="activeTab() === 'product'"
+              (click)="setTab('product')">
+        <i class="bi bi-tag"></i>
+        <span>Products &amp; Styles</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-body ms-1">{{ products().length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link d-flex align-items-center gap-2 px-3 py-2 fw-semibold"
+              [class.active]="activeTab() === 'customer'"
+              (click)="setTab('customer')">
+        <i class="bi bi-people"></i>
+        <span>Customers &amp; Buyers</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-body ms-1">{{ customers().length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link d-flex align-items-center gap-2 px-3 py-2 fw-semibold"
+              [class.active]="activeTab() === 'uom'"
+              (click)="setTab('uom')">
+        <i class="bi bi-rulers"></i>
+        <span>Units of Measure (UOM)</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-body ms-1">{{ uoms().length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link d-flex align-items-center gap-2 px-3 py-2 fw-semibold"
+              [class.active]="activeTab() === 'pricing'"
+              (click)="setTab('pricing')">
+        <i class="bi bi-currency-rupee"></i>
+        <span>Pricing Rate Cards</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-body ms-1">{{ pricingRules().length }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <!-- ============================================================== -->
+  <!-- TAB 1: COMPANY & UNITS -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'company') {
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-body d-flex justify-content-between align-items-center py-3">
+        <div>
+          <h5 class="mb-0 fw-bold">Manufacturing Companies &amp; Plant Units</h5>
+          <small class="text-secondary">Tiruppur mill headquarters, processing divisions, and export billing units.</small>
+        </div>
+        <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" (click)="showCompanyForm.set(!showCompanyForm())">
+          <i class="bi" [class.bi-plus-lg]="!showCompanyForm()" [class.bi-x-lg]="showCompanyForm()"></i>
+          <span>{{ showCompanyForm() ? 'Cancel' : '+ Add Company / Unit' }}</span>
+        </button>
+      </div>
+
+      <!-- Add Company Form -->
+      @if (showCompanyForm()) {
+        <div class="card-body border-bottom bg-body-tertiary p-4">
+          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-plus-circle me-1"></i> New Company / Plant Division</h6>
+          <form (ngSubmit)="submitCompany()">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Company Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newCompany.companyName" name="companyName" placeholder="e.g. Tiruppur TexFlow Garments Pvt Ltd" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Company Code *</label>
+                <input type="text" class="form-control text-uppercase" [(ngModel)]="newCompany.companyCode" name="companyCode" placeholder="e.g. TTG-CORP-01" required>
+              </div>
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold">Unit / Division Name</label>
+                <input type="text" class="form-control" [(ngModel)]="newCompany.unitOrDivision" name="unitOrDivision" placeholder="e.g. Unit 1 - Knitting & Garments, Angeripalayam">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">GSTIN *</label>
+                <input type="text" class="form-control text-uppercase" [(ngModel)]="newCompany.gstin" name="gstin" placeholder="e.g. 33AAACT1234F1Z5" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">PAN</label>
+                <input type="text" class="form-control text-uppercase" [(ngModel)]="newCompany.pan" name="pan" placeholder="e.g. AAACT1234F">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">IEC Code (Export/Import)</label>
+                <input type="text" class="form-control" [(ngModel)]="newCompany.iecCode" name="iecCode" placeholder="e.g. 0498765432">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Registered Factory Address *</label>
+                <input type="text" class="form-control" [(ngModel)]="newCompany.registeredAddress" name="registeredAddress" placeholder="SF No, Street, Tiruppur, Tamil Nadu" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Contact Email</label>
+                <input type="email" class="form-control" [(ngModel)]="newCompany.contactEmail" name="contactEmail" placeholder="contact@domain.com">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Contact Phone</label>
+                <input type="text" class="form-control" [(ngModel)]="newCompany.contactPhone" name="contactPhone" placeholder="+91 421 223 4567">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Bank Name &amp; Branch</label>
+                <input type="text" class="form-control" [(ngModel)]="newCompany.bankName" name="bankName" placeholder="e.g. State Bank of India, Tiruppur">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Bank Account Number</label>
+                <input type="text" class="form-control" [(ngModel)]="newCompany.bankAccountNumber" name="bankAccountNumber" placeholder="e.g. 30123456789">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">IFSC Code</label>
+                <input type="text" class="form-control text-uppercase" [(ngModel)]="newCompany.bankIfsc" name="bankIfsc" placeholder="SBIN0001234">
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="newCompany.primary" name="primary" id="primaryCheck">
+                  <label class="form-check-label small fw-semibold" for="primaryCheck">Primary HQ</label>
+                </div>
+              </div>
+
+              <div class="col-12 text-end mt-3">
+                <button type="button" class="btn btn-secondary btn-sm me-2" (click)="showCompanyForm.set(false)">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="isLoading()">Save Company Profile</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      }
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Company / Unit Code</th>
+                <th>Company Name</th>
+                <th>Division / Scope</th>
+                <th>GSTIN / PAN</th>
+                <th>Location / Address</th>
+                <th>Contact</th>
+                <th>Type</th>
+                <th class="text-end pe-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of companies(); track c.id) {
+                <tr>
+                  <td class="ps-3">
+                    <span class="badge bg-dark-subtle text-body font-monospace px-2 py-1">{{ c.companyCode }}</span>
+                  </td>
+                  <td>
+                    <div class="fw-bold">{{ c.companyName }}</div>
+                    @if (c.iecCode) {
+                      <small class="text-secondary">IEC: {{ c.iecCode }}</small>
+                    }
+                  </td>
+                  <td><span class="text-secondary small">{{ c.unitOrDivision || 'General' }}</span></td>
+                  <td>
+                    <div class="font-monospace small">{{ c.gstin }}</div>
+                    @if (c.pan) {
+                      <small class="text-secondary font-monospace">PAN: {{ c.pan }}</small>
+                    }
+                  </td>
+                  <td><small class="text-secondary text-truncate d-inline-block" style="max-width: 200px;">{{ c.registeredAddress }}</small></td>
+                  <td>
+                    <div>{{ c.contactEmail || '-' }}</div>
+                    <small class="text-secondary">{{ c.contactPhone }}</small>
+                  </td>
+                  <td>
+                    @if (c.primary) {
+                      <span class="badge bg-success">Primary HQ</span>
+                    } @else {
+                      <span class="badge bg-secondary-subtle text-secondary">Branch / Unit</span>
+                    }
+                  </td>
+                  <td class="text-end pe-3">
+                    <span class="badge bg-success-subtle text-success">Active</span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="text-center py-4 text-secondary">No company profiles registered.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- TAB 2: PRODUCTS & GARMENT STYLES -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'product') {
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-body d-flex justify-content-between align-items-center py-3">
+        <div>
+          <h5 class="mb-0 fw-bold">Garment Product &amp; Style Catalog</h5>
+          <small class="text-secondary">Standard tech-pack specifications, knit structures, yarn counts, and SMV benchmarks.</small>
+        </div>
+        <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" (click)="showProductForm.set(!showProductForm())">
+          <i class="bi" [class.bi-plus-lg]="!showProductForm()" [class.bi-x-lg]="showProductForm()"></i>
+          <span>{{ showProductForm() ? 'Cancel' : '+ Add Product / Style' }}</span>
+        </button>
+      </div>
+
+      <!-- Add Product Form -->
+      @if (showProductForm()) {
+        <div class="card-body border-bottom bg-body-tertiary p-4">
+          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-tag-fill me-1"></i> New Product / Garment Style</h6>
+          <form (ngSubmit)="submitProduct()">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Style / Product Code *</label>
+                <input type="text" class="form-control text-uppercase font-monospace" [(ngModel)]="newProduct.productCode" name="productCode" placeholder="e.g. STY-POLO-220" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Style Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.styleName" name="styleName" placeholder="e.g. Men Pique Polo Shirt with Flat Knit Collar" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Category</label>
+                <select class="form-select" [(ngModel)]="newProduct.category" name="category">
+                  <option value="MEN_ROUND_NECK">Men Round Neck T-Shirt</option>
+                  <option value="MEN_POLO">Men Polo Shirt</option>
+                  <option value="HOODIE">Unisex Fleece Hoodie</option>
+                  <option value="JOGGERS">French Terry Joggers</option>
+                  <option value="WOMEN_TOP">Women Casual Top</option>
+                  <option value="KIDS_TEE">Kids Graphic Tee</option>
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Fabric Type *</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.fabricType" name="fabricType" placeholder="Single Jersey, Pique, Rib" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Yarn Count Specification *</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.yarnCount" name="yarnCount" placeholder="e.g. 30s Combed Cotton" required>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Target GSM *</label>
+                <input type="number" class="form-control" [(ngModel)]="newProduct.targetGsm" name="targetGsm" placeholder="180" required>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Sewing SMV (Mins)</label>
+                <input type="number" step="0.1" class="form-control" [(ngModel)]="newProduct.standardSmv" name="standardSmv" placeholder="12.50">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">HSN Code</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.hsnCode" name="hsnCode" placeholder="61091000">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Neck Type / Construction</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.neckType" name="neckType" placeholder="e.g. Rib Collar with 2-Button Placket">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Sleeve Type</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.sleeveType" name="sleeveType" placeholder="Half Sleeve with Rib Cuff">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Size Scale Available</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.availableSizes" name="availableSizes" placeholder="S, M, L, XL, 2XL">
+              </div>
+
+              <div class="col-12 text-end mt-3">
+                <button type="button" class="btn btn-secondary btn-sm me-2" (click)="showProductForm.set(false)">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="isLoading()">Save Product</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      }
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Style Code</th>
+                <th>Style Name &amp; Silhouette</th>
+                <th>Fabric Construction</th>
+                <th>Yarn Count</th>
+                <th>GSM</th>
+                <th>Standard SMV</th>
+                <th>Sizes</th>
+                <th class="text-end pe-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of products(); track p.id) {
+                <tr>
+                  <td class="ps-3">
+                    <span class="badge bg-primary-subtle text-primary font-monospace px-2 py-1">{{ p.productCode }}</span>
+                  </td>
+                  <td>
+                    <div class="fw-bold">{{ p.styleName }}</div>
+                    <small class="text-secondary">{{ p.category }} &bull; {{ p.neckType }}</small>
+                  </td>
+                  <td><span class="badge bg-light text-dark border">{{ p.fabricType }}</span></td>
+                  <td><span class="text-secondary small">{{ p.yarnCount }}</span></td>
+                  <td><span class="fw-semibold">{{ p.targetGsm }} GSM</span></td>
+                  <td>
+                    <span class="badge bg-warning-subtle text-warning-emphasis">
+                      <i class="bi bi-stopwatch me-1"></i>{{ p.standardSmv }} mins
+                    </span>
+                  </td>
+                  <td><small class="text-secondary font-monospace">{{ p.availableSizes }}</small></td>
+                  <td class="text-end pe-3">
+                    <span class="badge bg-success-subtle text-success">Active</span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="text-center py-4 text-secondary">No products configured.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- TAB 3: CUSTOMERS & BUYERS -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'customer') {
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-body d-flex justify-content-between align-items-center py-3">
+        <div>
+          <h5 class="mb-0 fw-bold">Customer &amp; Buyer Accounts</h5>
+          <small class="text-secondary">Commercial contracts, payment terms, shipping destination ports, and export currencies.</small>
+        </div>
+        <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" (click)="showCustomerForm.set(!showCustomerForm())">
+          <i class="bi" [class.bi-plus-lg]="!showCustomerForm()" [class.bi-x-lg]="showCustomerForm()"></i>
+          <span>{{ showCustomerForm() ? 'Cancel' : '+ Add Customer / Buyer' }}</span>
+        </button>
+      </div>
+
+      <!-- Add Customer Form -->
+      @if (showCustomerForm()) {
+        <div class="card-body border-bottom bg-body-tertiary p-4">
+          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-person-plus-fill me-1"></i> New Customer Master Profile</h6>
+          <form (ngSubmit)="submitCustomer()">
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold">Legal Corporate Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.name" name="name" placeholder="e.g. Next Retail UK Limited" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Buyer Code *</label>
+                <input type="text" class="form-control text-uppercase font-monospace" [(ngModel)]="newCustomer.buyerCode" name="buyerCode" placeholder="e.g. BUY-NEXT-04" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Brand Names</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.brandNames" name="brandNames" placeholder="e.g. Next Menswear, Lipsy">
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Country</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.country" name="country" placeholder="e.g. United Kingdom">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Trading Currency</label>
+                <select class="form-select" [(ngModel)]="newCustomer.currency" name="currency">
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="INR">INR (₹)</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Payment Terms</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.paymentTerms" name="paymentTerms" placeholder="e.g. LC at 60 Days from BL">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Tax ID / GSTIN / VAT</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.taxIdGstin" name="taxIdGstin" placeholder="e.g. GB123456789">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Contact Person</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.contactPerson" name="contactPerson" placeholder="Account Manager / Sourcing Lead">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Contact Email</label>
+                <input type="email" class="form-control" [(ngModel)]="newCustomer.contactEmail" name="contactEmail" placeholder="sourcing@buyer.com">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Contact Phone</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.contactPhone" name="contactPhone" placeholder="+44 20 7946 0123">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Destination Shipping Port</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.shippingPort" name="shippingPort" placeholder="e.g. Tuticorin -> Port of Felixstowe">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Billing Address</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.billingAddress" name="billingAddress" placeholder="Headquarters Street Address">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Tolerance (+/- %)</label>
+                <input type="number" step="0.5" class="form-control" [(ngModel)]="newCustomer.tolerancePercentage" name="tolerancePercentage" placeholder="5.0">
+              </div>
+
+              <div class="col-12 text-end mt-3">
+                <button type="button" class="btn btn-secondary btn-sm me-2" (click)="showCustomerForm.set(false)">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="isLoading()">Save Customer</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      }
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Buyer Code</th>
+                <th>Customer / Buyer Name</th>
+                <th>Country</th>
+                <th>Currency</th>
+                <th>Payment Terms</th>
+                <th>Destination Port</th>
+                <th>Tolerance</th>
+                <th class="text-end pe-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (cust of customers(); track cust.id) {
+                <tr>
+                  <td class="ps-3">
+                    <span class="badge bg-info-subtle text-info font-monospace px-2 py-1">{{ cust.buyerCode }}</span>
+                  </td>
+                  <td>
+                    <div class="fw-bold">{{ cust.name }}</div>
+                    @if (cust.brandNames) {
+                      <small class="text-secondary"><i class="bi bi-tags me-1"></i>{{ cust.brandNames }}</small>
+                    }
+                  </td>
+                  <td>{{ cust.country }}</td>
+                  <td>
+                    <span class="badge bg-secondary-subtle text-body">{{ cust.currency }}</span>
+                  </td>
+                  <td><small class="text-secondary">{{ cust.paymentTerms || 'Net 30 Days' }}</small></td>
+                  <td><small class="text-secondary">{{ cust.shippingPort || 'Tuticorin Port (VOCPT)' }}</small></td>
+                  <td>
+                    <span class="badge bg-light text-dark border">&plusmn;{{ cust.tolerancePercentage || 5 }}%</span>
+                  </td>
+                  <td class="text-end pe-3">
+                    <span class="badge bg-success-subtle text-success">Active</span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="text-center py-4 text-secondary">No customer master accounts found.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- TAB 4: UNITS OF MEASURE (UOM) -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'uom') {
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-body py-3">
+        <h5 class="mb-0 fw-bold">Units of Measure (UOM) &amp; Conversion Multipliers</h5>
+        <small class="text-secondary">Standard reference base units and automated cross-unit conversion factors.</small>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">UOM Code</th>
+                <th>Unit Name</th>
+                <th>Category</th>
+                <th>Reference Base</th>
+                <th>Conversion Multiplier to Base</th>
+                <th>Decimals</th>
+                <th class="text-end pe-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of uoms(); track u.id) {
+                <tr>
+                  <td class="ps-3">
+                    <span class="badge bg-dark-subtle text-body font-monospace px-2 py-1">{{ u.uomCode }}</span>
+                  </td>
+                  <td class="fw-semibold">{{ u.uomName }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-primary-subtle text-primary': u.category === 'WEIGHT',
+                      'bg-success-subtle text-success': u.category === 'COUNT',
+                      'bg-warning-subtle text-warning-emphasis': u.category === 'PACKAGING',
+                      'bg-info-subtle text-info': u.category === 'LENGTH'
+                    }">{{ u.category }}</span>
+                  </td>
+                  <td>
+                    @if (u.baseUom) {
+                      <span class="badge bg-success"><i class="bi bi-star-fill me-1"></i>Base Unit</span>
+                    } @else {
+                      <span class="text-secondary small">Derived Unit</span>
+                    }
+                  </td>
+                  <td class="font-monospace fw-semibold">{{ u.conversionFactor }}</td>
+                  <td>{{ u.decimalPlaces }}</td>
+                  <td class="text-end pe-3">
+                    <span class="badge bg-success-subtle text-success">Active</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- TAB 5: PRICING RATE CARDS -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'pricing') {
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-body py-3">
+        <h5 class="mb-0 fw-bold">Job-Work &amp; Process Pricing Rate Cards</h5>
+        <small class="text-secondary">Tiruppur mill rates for circular knitting, soft-flow dyeing, cut-to-make sewing, and raw yarn.</small>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Rate Code</th>
+                <th>Process / Material Type</th>
+                <th>Specification / Depth</th>
+                <th>UOM</th>
+                <th>Base Rate</th>
+                <th>Currency</th>
+                <th>Effective Range</th>
+                <th class="text-end pe-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of pricingRules(); track r.id) {
+                <tr>
+                  <td class="ps-3">
+                    <span class="badge bg-secondary-subtle text-body font-monospace px-2 py-1">{{ r.priceCode }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-primary': r.processType === 'KNITTING_JOBWORK',
+                      'bg-info text-dark': r.processType === 'DYEING_JOBWORK',
+                      'bg-success': r.processType === 'SEWING_CM',
+                      'bg-warning text-dark': r.processType === 'YARN_PURCHASE',
+                      'bg-secondary': r.processType === 'FINISHING'
+                    }">{{ r.processType }}</span>
+                  </td>
+                  <td>
+                    <div class="fw-semibold">{{ r.categoryOrSpec }}</div>
+                    @if (r.notes) {
+                      <small class="text-secondary">{{ r.notes }}</small>
+                    }
+                  </td>
+                  <td><span class="badge bg-light text-dark border">{{ r.uomCode }}</span></td>
+                  <td>
+                    <span class="fw-bold fs-6 text-primary">₹ {{ r.baseRate | number:'1.2-2' }}</span>
+                  </td>
+                  <td>{{ r.currency }}</td>
+                  <td><small class="text-secondary">{{ r.effectiveFrom }} to {{ r.effectiveTo || 'Ongoing' }}</small></td>
+                  <td class="text-end pe-3">
+                    <span class="badge bg-success-subtle text-success">Active</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -3,9 +3,13 @@ package com.tiruppur.yarnmanager.security;
 import com.tiruppur.yarnmanager.domain.auth.entity.Role;
 import com.tiruppur.yarnmanager.domain.auth.entity.User;
 import com.tiruppur.yarnmanager.domain.auth.repository.UserRepository;
+import com.tiruppur.yarnmanager.domain.master.entity.CompanyMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.PricingMaster;
+import com.tiruppur.yarnmanager.domain.master.entity.ProductMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.UomMaster;
+import com.tiruppur.yarnmanager.domain.master.repository.CompanyMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.PricingMasterRepository;
+import com.tiruppur.yarnmanager.domain.master.repository.ProductMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.UomMasterRepository;
 import com.tiruppur.yarnmanager.domain.order.entity.Buyer;
 import com.tiruppur.yarnmanager.domain.order.repository.BuyerRepository;
@@ -29,22 +33,30 @@ public class DataInitializer implements CommandLineRunner {
     private final UomMasterRepository uomRepository;
     private final BuyerRepository buyerRepository;
     private final PricingMasterRepository pricingRepository;
+    private final CompanyMasterRepository companyRepository;
+    private final ProductMasterRepository productRepository;
 
     public DataInitializer(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
                            UomMasterRepository uomRepository,
                            BuyerRepository buyerRepository,
-                           PricingMasterRepository pricingRepository) {
+                           PricingMasterRepository pricingRepository,
+                           CompanyMasterRepository companyRepository,
+                           ProductMasterRepository productRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.uomRepository = uomRepository;
         this.buyerRepository = buyerRepository;
         this.pricingRepository = pricingRepository;
+        this.companyRepository = companyRepository;
+        this.productRepository = productRepository;
     }
 
     @Override
     public void run(String... args) {
         initUsers();
+        initCompany();
+        initProducts();
         initUoms();
         initCustomers();
         initPricing();
@@ -67,6 +79,120 @@ public class DataInitializer implements CommandLineRunner {
             );
             userRepository.saveAll(defaultUsers);
             logger.info("Saved {} default users.", defaultUsers.size());
+        }
+    }
+
+    private void initCompany() {
+        if (companyRepository.count() == 0) {
+            logger.info("Initializing Company Master profiles...");
+            List<CompanyMaster> companies = List.of(
+                CompanyMaster.builder()
+                    .companyName("Tiruppur TexFlow Garments Pvt Ltd")
+                    .companyCode("TTG-CORP-01")
+                    .unitOrDivision("Unit 1 - Headquarters & Integrated Garment Plant")
+                    .gstin("33AAACT1234F1Z5")
+                    .pan("AAACT1234F")
+                    .iecCode("0498765432")
+                    .registeredAddress("SF No. 124/2, Kangeyam Main Road, Nallur, Tiruppur, Tamil Nadu 641604")
+                    .contactPerson("Ramasamy")
+                    .contactEmail("contact@tiruppurtextiles.com")
+                    .contactPhone("+91 421 223 4567")
+                    .bankName("State Bank of India, Overseas Branch, Tiruppur")
+                    .bankAccountNumber("30123456789")
+                    .bankIfsc("SBIN0001234")
+                    .isPrimary(true)
+                    .active(true)
+                    .build(),
+
+                CompanyMaster.builder()
+                    .companyName("TexFlow Processing & Dyeing Division")
+                    .companyCode("TTG-DYE-02")
+                    .unitOrDivision("Unit 2 - CETP Zero-Liquid Discharge Dyeing House")
+                    .gstin("33AAACT1234F2Z4")
+                    .pan("AAACT1234F")
+                    .iecCode("0498765432")
+                    .registeredAddress("SIPCOT Industrial Park, Perundurai, Erode / Tiruppur Border")
+                    .contactPerson("K. Palanisamy")
+                    .contactEmail("dyeing@tiruppurtextiles.com")
+                    .contactPhone("+91 421 245 8900")
+                    .bankName("Canara Bank, SME Branch, Tiruppur")
+                    .bankAccountNumber("12345678901234")
+                    .bankIfsc("CNRB0005678")
+                    .isPrimary(false)
+                    .active(true)
+                    .build()
+            );
+            companyRepository.saveAll(companies);
+            logger.info("Saved {} company master profiles.", companies.size());
+        }
+    }
+
+    private void initProducts() {
+        if (productRepository.count() == 0) {
+            logger.info("Initializing Product Master (Garment Styles)...");
+            List<ProductMaster> products = List.of(
+                ProductMaster.builder()
+                    .productCode("STY-CREW-180")
+                    .styleName("Men Bio-Wash Crew Neck T-Shirt")
+                    .category("MEN_ROUND_NECK")
+                    .fabricType("Single Jersey")
+                    .yarnCount("30s Combed Cotton")
+                    .targetGsm(180)
+                    .neckType("Round Neck (1x1 Cotton Rib)")
+                    .sleeveType("Half Sleeve")
+                    .standardSmv(new BigDecimal("12.50"))
+                    .availableSizes("S, M, L, XL, 2XL")
+                    .hsnCode("61091000")
+                    .active(true)
+                    .build(),
+
+                ProductMaster.builder()
+                    .productCode("STY-POLO-220")
+                    .styleName("Men Pique Polo Shirt with Flat Knit Collar")
+                    .category("MEN_POLO")
+                    .fabricType("Pique / Honeycomb")
+                    .yarnCount("30s Combed Cotton")
+                    .targetGsm(220)
+                    .neckType("Flat Knit Rib Collar with 2-Button Box Placket")
+                    .sleeveType("Half Sleeve with Rib Cuff")
+                    .standardSmv(new BigDecimal("22.00"))
+                    .availableSizes("M, L, XL, 2XL, 3XL")
+                    .hsnCode("61051000")
+                    .active(true)
+                    .build(),
+
+                ProductMaster.builder()
+                    .productCode("STY-HOOD-320")
+                    .styleName("Unisex Heavyweight Kangaroo Pocket Hoodie")
+                    .category("HOODIE")
+                    .fabricType("3-Thread Fleece")
+                    .yarnCount("24s Melange Cotton")
+                    .targetGsm(320)
+                    .neckType("Drawstring Hood with Metal Eyelets")
+                    .sleeveType("Full Sleeve with 2x2 Spun Rib")
+                    .standardSmv(new BigDecimal("34.00"))
+                    .availableSizes("XS, S, M, L, XL, 2XL")
+                    .hsnCode("61102000")
+                    .active(true)
+                    .build(),
+
+                ProductMaster.builder()
+                    .productCode("STY-JOG-260")
+                    .styleName("Athletic Slim Fit French Terry Joggers")
+                    .category("JOGGERS")
+                    .fabricType("French Terry")
+                    .yarnCount("30s Combed Cotton")
+                    .targetGsm(260)
+                    .neckType("Elastic Rib Waistband with Drawcord")
+                    .sleeveType("Ribbed Ankle Hem")
+                    .standardSmv(new BigDecimal("24.50"))
+                    .availableSizes("S, M, L, XL, 2XL")
+                    .hsnCode("61034200")
+                    .active(true)
+                    .build()
+            );
+            productRepository.saveAll(products);
+            logger.info("Saved {} product / garment styles.", products.size());
         }
     }
 

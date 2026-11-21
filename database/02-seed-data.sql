@@ -24,6 +24,18 @@ INSERT INTO uom_master (uom_code, uom_name, category, base_uom, conversion_facto
 ('MTR', 'Meter', 'LENGTH', true, 1.000000, 2, true),
 ('YDS', 'Yard', 'LENGTH', false, 0.914400, 2, true);
 
+-- 1A. Master Data: Manufacturing Company & Plant Divisions
+INSERT INTO company_master (company_name, company_code, unit_or_division, gstin, pan, iec_code, registered_address, contact_person, contact_email, contact_phone, bank_name, bank_account_number, bank_ifsc, is_primary, active) VALUES
+('Tiruppur TexFlow Garments Pvt Ltd', 'TTG-CORP-01', 'Unit 1 - Headquarters & Integrated Garment Plant', '33AAACT1234F1Z5', 'AAACT1234F', '0498765432', 'SF No. 124/2, Kangeyam Main Road, Nallur, Tiruppur, Tamil Nadu 641604', 'Ramasamy', 'contact@tiruppurtextiles.com', '+91 421 223 4567', 'State Bank of India, Overseas Branch, Tiruppur', '30123456789', 'SBIN0001234', true, true),
+('TexFlow Processing & Dyeing Division', 'TTG-DYE-02', 'Unit 2 - CETP Zero-Liquid Discharge Dyeing House', '33AAACT1234F2Z4', 'AAACT1234F', '0498765432', 'SIPCOT Industrial Park, Perundurai, Erode / Tiruppur Border', 'K. Palanisamy', 'dyeing@tiruppurtextiles.com', '+91 421 245 8900', 'Canara Bank, SME Branch, Tiruppur', '12345678901234', 'CNRB0005678', false, true);
+
+-- 1B. Master Data: Products / Garment Styles
+INSERT INTO product_master (product_code, style_name, category, fabric_type, yarn_count, target_gsm, neck_type, sleeve_type, standard_smv, available_sizes, hsn_code, active) VALUES
+('STY-CREW-180', 'Men Bio-Wash Crew Neck T-Shirt', 'MEN_ROUND_NECK', 'Single Jersey', '30s Combed Cotton', 180, 'Round Neck (1x1 Cotton Rib)', 'Half Sleeve', 12.50, 'S, M, L, XL, 2XL', '61091000', true),
+('STY-POLO-220', 'Men Pique Polo Shirt with Flat Knit Collar', 'MEN_POLO', 'Pique / Honeycomb', '30s Combed Cotton', 220, 'Flat Knit Rib Collar with 2-Button Box Placket', 'Half Sleeve with Rib Cuff', 22.00, 'M, L, XL, 2XL, 3XL', '61051000', true),
+('STY-HOOD-320', 'Unisex Heavyweight Kangaroo Pocket Hoodie', 'HOODIE', '3-Thread Fleece', '24s Melange Cotton', 320, 'Drawstring Hood with Metal Eyelets', 'Full Sleeve with 2x2 Spun Rib', 34.00, 'XS, S, M, L, XL, 2XL', '61102000', true),
+('STY-JOG-260', 'Athletic Slim Fit French Terry Joggers', 'JOGGERS', 'French Terry', '30s Combed Cotton', 260, 'Elastic Rib Waistband with Drawcord', 'Ribbed Ankle Hem', 24.50, 'S, M, L, XL, 2XL', '61034200', true);
+
 -- 2. Master Data: Customers / Buyers
 INSERT INTO buyers (name, buyer_code, brand_names, country, currency, payment_terms, tax_id_gstin, contact_person, contact_email, contact_phone, billing_address, shipping_port, tolerance_percentage, active) VALUES
 ('Zara Sourcing Europe (Inditex Group)', 'BUY-ZARA-01', 'Zara Man, Zara Kids, TRF', 'Spain', 'EUR', 'LC at 60 Days from BL Date', 'ESB15075062', 'Carlos Mendez', 'carlos@inditex.com', '+34 981 185 400', 'Avenida de la Diputacion, Edificio Inditex, 15142 Arteixo, Spain', 'Tuticorin Port (VOCPT) -> Port of Valencia', 3.00, true),

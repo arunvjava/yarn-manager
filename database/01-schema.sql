@@ -4,6 +4,8 @@
 -- ====================================================================
 
 -- Clean up if exists
+DROP TABLE IF EXISTS company_master CASCADE;
+DROP TABLE IF EXISTS product_master CASCADE;
 DROP TABLE IF EXISTS pricing_master CASCADE;
 DROP TABLE IF EXISTS uom_master CASCADE;
 DROP TABLE IF EXISTS carton_packings CASCADE;
@@ -39,6 +41,45 @@ CREATE TABLE uom_master (
     base_uom BOOLEAN DEFAULT FALSE,
     conversion_factor NUMERIC(12, 6) DEFAULT 1.0, -- Multiplier to convert to base unit
     decimal_places INT DEFAULT 2,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 1A. MASTER DATA: MANUFACTURING COMPANY & PLANT DIVISIONS
+CREATE TABLE company_master (
+    id BIGSERIAL PRIMARY KEY,
+    company_name VARCHAR(150) NOT NULL,
+    company_code VARCHAR(50) UNIQUE NOT NULL,
+    unit_or_division VARCHAR(100),
+    gstin VARCHAR(50) NOT NULL,
+    pan VARCHAR(20),
+    iec_code VARCHAR(50),
+    registered_address VARCHAR(500) NOT NULL,
+    contact_person VARCHAR(100),
+    contact_email VARCHAR(150),
+    contact_phone VARCHAR(50),
+    bank_name VARCHAR(150),
+    bank_account_number VARCHAR(50),
+    bank_ifsc VARCHAR(20),
+    is_primary BOOLEAN DEFAULT TRUE,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 1B. MASTER DATA: GARMENT PRODUCTS & STYLES
+CREATE TABLE product_master (
+    id BIGSERIAL PRIMARY KEY,
+    product_code VARCHAR(50) UNIQUE NOT NULL,    -- 'STY-CREW-180', 'STY-POLO-220'
+    style_name VARCHAR(150) NOT NULL,
+    category VARCHAR(50) NOT NULL,                -- 'MEN_ROUND_NECK', 'MEN_POLO', 'HOODIE', 'JOGGERS'
+    fabric_type VARCHAR(100) NOT NULL,            -- 'Single Jersey', 'Pique / Honeycomb'
+    yarn_count VARCHAR(50) NOT NULL,              -- '30s Combed Cotton', '34s Lycra'
+    target_gsm INT NOT NULL,
+    neck_type VARCHAR(100),
+    sleeve_type VARCHAR(100),
+    standard_smv NUMERIC(6, 2) DEFAULT 12.50,
+    available_sizes VARCHAR(150) DEFAULT 'S, M, L, XL, 2XL',
+    hsn_code VARCHAR(20) DEFAULT '61091000',
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

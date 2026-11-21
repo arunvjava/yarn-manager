@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse } from '../models/yarn-manager.models';
-import { UomMaster, CustomerMaster, PricingMaster } from '../models/master-data.models';
+import { CompanyMaster, ProductMaster, UomMaster, CustomerMaster, PricingMaster } from '../models/master-data.models';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +11,47 @@ export class MasterDataService {
   private http = inject(HttpClient);
   private baseUrl = 'http://localhost:8080/api/v1/master';
 
-  // UOM
-  getUoms(activeOnly = true): Observable<ApiResponse<UomMaster[]>> {
+  // 1. Company Master
+  getCompanies(activeOnly = false): Observable<ApiResponse<CompanyMaster[]>> {
+    const params = new HttpParams().set('activeOnly', activeOnly.toString());
+    return this.http.get<ApiResponse<CompanyMaster[]>>(`${this.baseUrl}/company`, { params });
+  }
+
+  getCompanyById(id: number): Observable<ApiResponse<CompanyMaster>> {
+    return this.http.get<ApiResponse<CompanyMaster>>(`${this.baseUrl}/company/${id}`);
+  }
+
+  saveCompany(company: CompanyMaster): Observable<ApiResponse<CompanyMaster>> {
+    return this.http.post<ApiResponse<CompanyMaster>>(`${this.baseUrl}/company`, company);
+  }
+
+  updateCompany(id: number, company: CompanyMaster): Observable<ApiResponse<CompanyMaster>> {
+    return this.http.put<ApiResponse<CompanyMaster>>(`${this.baseUrl}/company/${id}`, company);
+  }
+
+  // 2. Product Master (Garment Styles)
+  getProducts(activeOnly = false, category?: string): Observable<ApiResponse<ProductMaster[]>> {
+    let params = new HttpParams().set('activeOnly', activeOnly.toString());
+    if (category) {
+      params = params.set('category', category);
+    }
+    return this.http.get<ApiResponse<ProductMaster[]>>(`${this.baseUrl}/products`, { params });
+  }
+
+  getProductById(id: number): Observable<ApiResponse<ProductMaster>> {
+    return this.http.get<ApiResponse<ProductMaster>>(`${this.baseUrl}/products/${id}`);
+  }
+
+  saveProduct(product: ProductMaster): Observable<ApiResponse<ProductMaster>> {
+    return this.http.post<ApiResponse<ProductMaster>>(`${this.baseUrl}/products`, product);
+  }
+
+  updateProduct(id: number, product: ProductMaster): Observable<ApiResponse<ProductMaster>> {
+    return this.http.put<ApiResponse<ProductMaster>>(`${this.baseUrl}/products/${id}`, product);
+  }
+
+  // 3. UOM
+  getUoms(activeOnly = false): Observable<ApiResponse<UomMaster[]>> {
     const params = new HttpParams().set('activeOnly', activeOnly.toString());
     return this.http.get<ApiResponse<UomMaster[]>>(`${this.baseUrl}/uom`, { params });
   }
@@ -29,8 +68,8 @@ export class MasterDataService {
     return this.http.get<ApiResponse<number>>(`${this.baseUrl}/uom/convert`, { params });
   }
 
-  // Customers
-  getCustomers(activeOnly = true): Observable<ApiResponse<CustomerMaster[]>> {
+  // 4. Customers
+  getCustomers(activeOnly = false): Observable<ApiResponse<CustomerMaster[]>> {
     const params = new HttpParams().set('activeOnly', activeOnly.toString());
     return this.http.get<ApiResponse<CustomerMaster[]>>(`${this.baseUrl}/customers`, { params });
   }
@@ -47,8 +86,8 @@ export class MasterDataService {
     return this.http.put<ApiResponse<CustomerMaster>>(`${this.baseUrl}/customers/${id}`, customer);
   }
 
-  // Pricing
-  getPricing(activeOnly = true, processType?: string): Observable<ApiResponse<PricingMaster[]>> {
+  // 5. Pricing
+  getPricing(activeOnly = false, processType?: string): Observable<ApiResponse<PricingMaster[]>> {
     let params = new HttpParams().set('activeOnly', activeOnly.toString());
     if (processType) {
       params = params.set('processType', processType);

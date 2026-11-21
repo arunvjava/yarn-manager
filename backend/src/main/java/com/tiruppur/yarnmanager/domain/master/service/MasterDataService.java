@@ -1,8 +1,12 @@
 package com.tiruppur.yarnmanager.domain.master.service;
 
+import com.tiruppur.yarnmanager.domain.master.entity.CompanyMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.PricingMaster;
+import com.tiruppur.yarnmanager.domain.master.entity.ProductMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.UomMaster;
+import com.tiruppur.yarnmanager.domain.master.repository.CompanyMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.PricingMasterRepository;
+import com.tiruppur.yarnmanager.domain.master.repository.ProductMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.UomMasterRepository;
 import com.tiruppur.yarnmanager.domain.order.entity.Buyer;
 import com.tiruppur.yarnmanager.domain.order.repository.BuyerRepository;
@@ -21,17 +25,113 @@ public class MasterDataService {
     private final UomMasterRepository uomRepository;
     private final BuyerRepository buyerRepository;
     private final PricingMasterRepository pricingRepository;
+    private final CompanyMasterRepository companyRepository;
+    private final ProductMasterRepository productRepository;
 
     public MasterDataService(UomMasterRepository uomRepository,
                              BuyerRepository buyerRepository,
-                             PricingMasterRepository pricingRepository) {
+                             PricingMasterRepository pricingRepository,
+                             CompanyMasterRepository companyRepository,
+                             ProductMasterRepository productRepository) {
         this.uomRepository = uomRepository;
         this.buyerRepository = buyerRepository;
         this.pricingRepository = pricingRepository;
+        this.companyRepository = companyRepository;
+        this.productRepository = productRepository;
     }
 
     // ==========================================
-    // 1. UOM (Unit of Measure) Operations
+    // 1. Company Master Operations
+    // ==========================================
+    @Transactional(readOnly = true)
+    public List<CompanyMaster> getAllCompanies(Boolean activeOnly) {
+        if (Boolean.TRUE.equals(activeOnly)) {
+            return companyRepository.findByActiveTrue();
+        }
+        return companyRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public CompanyMaster getCompanyById(Long id) {
+        return companyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Company not found with ID: " + id));
+    }
+
+    public CompanyMaster saveCompany(CompanyMaster company) {
+        company.setCompanyCode(company.getCompanyCode().toUpperCase().trim());
+        return companyRepository.save(company);
+    }
+
+    public CompanyMaster updateCompany(Long id, CompanyMaster updated) {
+        CompanyMaster existing = getCompanyById(id);
+        existing.setCompanyName(updated.getCompanyName());
+        existing.setCompanyCode(updated.getCompanyCode().toUpperCase().trim());
+        existing.setUnitOrDivision(updated.getUnitOrDivision());
+        existing.setGstin(updated.getGstin());
+        existing.setPan(updated.getPan());
+        existing.setIecCode(updated.getIecCode());
+        existing.setRegisteredAddress(updated.getRegisteredAddress());
+        existing.setContactPerson(updated.getContactPerson());
+        existing.setContactEmail(updated.getContactEmail());
+        existing.setContactPhone(updated.getContactPhone());
+        existing.setBankName(updated.getBankName());
+        existing.setBankAccountNumber(updated.getBankAccountNumber());
+        existing.setBankIfsc(updated.getBankIfsc());
+        existing.setPrimary(updated.isPrimary());
+        existing.setActive(updated.isActive());
+        return companyRepository.save(existing);
+    }
+
+    // ==========================================
+    // 2. Product Master (Garment Styles) Operations
+    // ==========================================
+    @Transactional(readOnly = true)
+    public List<ProductMaster> getAllProducts(Boolean activeOnly, String category) {
+        if (category != null && !category.isBlank()) {
+            return productRepository.findByCategoryAndActiveTrue(category.toUpperCase().trim());
+        }
+        if (Boolean.TRUE.equals(activeOnly)) {
+            return productRepository.findByActiveTrue();
+        }
+        return productRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public ProductMaster getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product / Style not found with ID: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public ProductMaster getProductByCode(String code) {
+        return productRepository.findByProductCode(code.toUpperCase().trim())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found for code: " + code));
+    }
+
+    public ProductMaster saveProduct(ProductMaster product) {
+        product.setProductCode(product.getProductCode().toUpperCase().trim());
+        return productRepository.save(product);
+    }
+
+    public ProductMaster updateProduct(Long id, ProductMaster updated) {
+        ProductMaster existing = getProductById(id);
+        existing.setProductCode(updated.getProductCode().toUpperCase().trim());
+        existing.setStyleName(updated.getStyleName());
+        existing.setCategory(updated.getCategory());
+        existing.setFabricType(updated.getFabricType());
+        existing.setYarnCount(updated.getYarnCount());
+        existing.setTargetGsm(updated.getTargetGsm());
+        existing.setNeckType(updated.getNeckType());
+        existing.setSleeveType(updated.getSleeveType());
+        existing.setStandardSmv(updated.getStandardSmv());
+        existing.setAvailableSizes(updated.getAvailableSizes());
+        existing.setHsnCode(updated.getHsnCode());
+        existing.setActive(updated.isActive());
+        return productRepository.save(existing);
+    }
+
+    // ==========================================
+    // 3. UOM (Unit of Measure) Operations
     // ==========================================
     @Transactional(readOnly = true)
     public List<UomMaster> getAllUoms(Boolean activeOnly) {
@@ -72,7 +172,7 @@ public class MasterDataService {
     }
 
     // ==========================================
-    // 2. Customer / Buyer Master Operations
+    // 4. Customer / Buyer Master Operations
     // ==========================================
     @Transactional(readOnly = true)
     public List<Buyer> getAllCustomers(Boolean activeOnly) {
@@ -112,7 +212,7 @@ public class MasterDataService {
     }
 
     // ==========================================
-    // 3. Pricing Master Operations
+    // 5. Pricing Master Operations
     // ==========================================
     @Transactional(readOnly = true)
     public List<PricingMaster> getAllPrices(Boolean activeOnly, String processType) {
