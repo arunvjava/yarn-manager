@@ -1,74 +1,205 @@
-<aside class="d-flex flex-column justify-content-between p-3 border-end border-secondary border-opacity-25 flex-shrink-0 h-100" style="width: 260px; background-color: var(--app-sidebar-bg);">
-  <div class="d-flex flex-column gap-3">
+<aside
+  class="d-flex flex-column justify-content-between border-end border-secondary border-opacity-25 flex-shrink-0 h-100"
+  [ngClass]="sidebarService.isCollapsed() ? 'p-2' : 'p-3'"
+  [style.width]="sidebarService.isCollapsed() ? '76px' : '260px'"
+  style="background-color: var(--app-sidebar-bg); transition: width 0.25s ease-in-out, padding 0.25s ease-in-out; overflow-x: hidden;"
+>
+  <div class="d-flex flex-column gap-3 overflow-y-auto" style="overflow-x: hidden;">
     <!-- App Brand -->
-    <div class="d-flex align-items-center gap-3 px-2 py-2 border-bottom border-secondary border-opacity-25 pb-3">
-      <div class="d-flex align-items-center justify-content-center bg-info text-dark fw-bold rounded-3 shadow-sm" style="width: 40px; height: 40px; font-size: 1.25rem;">
-        Y
+    @if (!sidebarService.isCollapsed()) {
+      <div class="d-flex align-items-center justify-content-between px-2 py-2 border-bottom border-secondary border-opacity-25 pb-3">
+        <div class="d-flex align-items-center gap-3 overflow-hidden">
+          <div class="d-flex align-items-center justify-content-center bg-info text-dark fw-bold rounded-3 shadow-sm flex-shrink-0" style="width: 40px; height: 40px; font-size: 1.25rem;">
+            Y
+          </div>
+          <div class="text-truncate">
+            <h6 class="mb-0 fw-bold text-white tracking-wide text-truncate" style="letter-spacing: 0.05em;">YARN MANAGER</h6>
+            <small class="text-info text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.05em;">Tiruppur Knitwear ERP</small>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="sidebarService.toggle()"
+          class="btn btn-sm btn-outline-secondary border-0 text-secondary p-1 d-flex align-items-center justify-content-center rounded-2"
+          style="width: 28px; height: 28px;"
+          title="Collapse sidebar"
+          aria-label="Collapse sidebar"
+        >
+          <i class="bi bi-chevron-double-left fs-6"></i>
+        </button>
       </div>
-      <div>
-        <h6 class="mb-0 fw-bold text-white tracking-wide">YARN MANAGER</h6>
-        <small class="text-info text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.05em;">Tiruppur Knitwear ERP</small>
+    } @else {
+      <div class="d-flex flex-column align-items-center gap-2 py-2 border-bottom border-secondary border-opacity-25 pb-3">
+        <div
+          class="d-flex align-items-center justify-content-center bg-info text-dark fw-bold rounded-3 shadow-sm flex-shrink-0"
+          style="width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;"
+          (click)="sidebarService.toggle()"
+          title="Yarn Manager - Tiruppur Knitwear ERP (Click to expand)"
+        >
+          Y
+        </div>
+        <button
+          type="button"
+          (click)="sidebarService.toggle()"
+          class="btn btn-sm btn-outline-secondary border-0 text-secondary p-0 d-flex align-items-center justify-content-center rounded-2"
+          style="width: 28px; height: 28px;"
+          title="Expand sidebar"
+          aria-label="Expand sidebar"
+        >
+          <i class="bi bi-chevron-double-right fs-6"></i>
+        </button>
       </div>
-    </div>
+    }
 
     <!-- Navigation Links -->
     <nav class="nav nav-pills flex-column gap-1">
-      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
-        <i class="bi bi-speedometer2 fs-5 text-info"></i>
-        <span>Pipeline Dashboard</span>
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        class="nav-link text-white-50 d-flex align-items-center rounded-3 py-2"
+        [ngClass]="sidebarService.isCollapsed() ? 'justify-content-center px-0' : 'gap-3 px-3'"
+        [title]="sidebarService.isCollapsed() ? 'Pipeline Dashboard' : ''"
+        style="white-space: nowrap;"
+      >
+        <i class="bi bi-speedometer2 fs-5 text-info flex-shrink-0"></i>
+        @if (!sidebarService.isCollapsed()) {
+          <span class="text-truncate">Pipeline Dashboard</span>
+        }
       </a>
 
-      <div class="px-3 pt-3 pb-1 text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.08em;">
-        Stages (Yarn to Clothes)
-      </div>
+      @if (!sidebarService.isCollapsed()) {
+        <div class="px-3 pt-3 pb-1 text-uppercase text-secondary fw-bold text-truncate" style="font-size: 0.65rem; letter-spacing: 0.08em;">
+          Stages (Yarn to Clothes)
+        </div>
+      } @else {
+        <hr class="border-secondary border-opacity-25 my-1 mx-2" />
+      }
 
-      <a routerLink="/yarn" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
-        <i class="bi bi-boxes fs-5 text-warning"></i>
-        <span>1. Yarn Inventory</span>
+      <a
+        routerLink="/yarn"
+        routerLinkActive="active"
+        class="nav-link text-white-50 d-flex align-items-center rounded-3 py-2"
+        [ngClass]="sidebarService.isCollapsed() ? 'justify-content-center px-0' : 'gap-3 px-3'"
+        [title]="sidebarService.isCollapsed() ? '1. Yarn Inventory' : ''"
+        style="white-space: nowrap;"
+      >
+        <i class="bi bi-boxes fs-5 text-warning flex-shrink-0"></i>
+        @if (!sidebarService.isCollapsed()) {
+          <span class="text-truncate">1. Yarn Inventory</span>
+        }
       </a>
 
-      <a routerLink="/knitting" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
-        <i class="bi bi-gear-wide-connected fs-5 text-primary"></i>
-        <span>2. Circular Knitting</span>
+      <a
+        routerLink="/knitting"
+        routerLinkActive="active"
+        class="nav-link text-white-50 d-flex align-items-center rounded-3 py-2"
+        [ngClass]="sidebarService.isCollapsed() ? 'justify-content-center px-0' : 'gap-3 px-3'"
+        [title]="sidebarService.isCollapsed() ? '2. Circular Knitting' : ''"
+        style="white-space: nowrap;"
+      >
+        <i class="bi bi-gear-wide-connected fs-5 text-primary flex-shrink-0"></i>
+        @if (!sidebarService.isCollapsed()) {
+          <span class="text-truncate">2. Circular Knitting</span>
+        }
       </a>
 
-      <a routerLink="/dyeing" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
-        <i class="bi bi-droplet-half fs-5 text-indigo text-info"></i>
-        <span>3. Dyeing DC Tracking</span>
+      <a
+        routerLink="/dyeing"
+        routerLinkActive="active"
+        class="nav-link text-white-50 d-flex align-items-center rounded-3 py-2"
+        [ngClass]="sidebarService.isCollapsed() ? 'justify-content-center px-0' : 'gap-3 px-3'"
+        [title]="sidebarService.isCollapsed() ? '3. Dyeing DC Tracking' : ''"
+        style="white-space: nowrap;"
+      >
+        <i class="bi bi-droplet-half fs-5 text-info flex-shrink-0"></i>
+        @if (!sidebarService.isCollapsed()) {
+          <span class="text-truncate">3. Dyeing DC Tracking</span>
+        }
       </a>
 
-      <a routerLink="/cutting" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
-        <i class="bi bi-scissors fs-5 text-purple" style="color: #c084fc;"></i>
-        <span>4. Cutting &amp; Bundles</span>
+      <a
+        routerLink="/cutting"
+        routerLinkActive="active"
+        class="nav-link text-white-50 d-flex align-items-center rounded-3 py-2"
+        [ngClass]="sidebarService.isCollapsed() ? 'justify-content-center px-0' : 'gap-3 px-3'"
+        [title]="sidebarService.isCollapsed() ? '4. Cutting & Bundles' : ''"
+        style="white-space: nowrap;"
+      >
+        <i class="bi bi-scissors fs-5 flex-shrink-0" style="color: #c084fc;"></i>
+        @if (!sidebarService.isCollapsed()) {
+          <span class="text-truncate">4. Cutting &amp; Bundles</span>
+        }
       </a>
 
-      <a routerLink="/sewing" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
-        <i class="bi bi-threads fs-5 text-success"></i>
-        <span>5. Sewing Assembly</span>
+      <a
+        routerLink="/sewing"
+        routerLinkActive="active"
+        class="nav-link text-white-50 d-flex align-items-center rounded-3 py-2"
+        [ngClass]="sidebarService.isCollapsed() ? 'justify-content-center px-0' : 'gap-3 px-3'"
+        [title]="sidebarService.isCollapsed() ? '5. Sewing Assembly' : ''"
+        style="white-space: nowrap;"
+      >
+        <i class="bi bi-threads fs-5 text-success flex-shrink-0"></i>
+        @if (!sidebarService.isCollapsed()) {
+          <span class="text-truncate">5. Sewing Assembly</span>
+        }
       </a>
 
-      <a routerLink="/packing" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
-        <i class="bi bi-box-seam fs-5 text-teal text-info"></i>
-        <span>6. Carton Dispatch</span>
+      <a
+        routerLink="/packing"
+        routerLinkActive="active"
+        class="nav-link text-white-50 d-flex align-items-center rounded-3 py-2"
+        [ngClass]="sidebarService.isCollapsed() ? 'justify-content-center px-0' : 'gap-3 px-3'"
+        [title]="sidebarService.isCollapsed() ? '6. Carton Dispatch' : ''"
+        style="white-space: nowrap;"
+      >
+        <i class="bi bi-box-seam fs-5 text-info flex-shrink-0"></i>
+        @if (!sidebarService.isCollapsed()) {
+          <span class="text-truncate">6. Carton Dispatch</span>
+        }
       </a>
 
-      <div class="px-3 pt-3 pb-1 text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.08em;">
-        Core Masters
-      </div>
+      @if (!sidebarService.isCollapsed()) {
+        <div class="px-3 pt-3 pb-1 text-uppercase text-secondary fw-bold text-truncate" style="font-size: 0.65rem; letter-spacing: 0.08em;">
+          Core Masters
+        </div>
+      } @else {
+        <hr class="border-secondary border-opacity-25 my-1 mx-2" />
+      }
 
-      <a routerLink="/master" routerLinkActive="active" class="nav-link text-white-50 d-flex align-items-center gap-3 py-2 px-3 rounded-3">
-        <i class="bi bi-database-gear fs-5 text-warning"></i>
-        <span>Master Data Hub</span>
+      <a
+        routerLink="/master"
+        routerLinkActive="active"
+        class="nav-link text-white-50 d-flex align-items-center rounded-3 py-2"
+        [ngClass]="sidebarService.isCollapsed() ? 'justify-content-center px-0' : 'gap-3 px-3'"
+        [title]="sidebarService.isCollapsed() ? 'Master Data Hub' : ''"
+        style="white-space: nowrap;"
+      >
+        <i class="bi bi-database-gear fs-5 text-warning flex-shrink-0"></i>
+        @if (!sidebarService.isCollapsed()) {
+          <span class="text-truncate">Master Data Hub</span>
+        }
       </a>
     </nav>
   </div>
 
-  <!-- Cluster Badge -->
-  <div class="card bg-dark border border-secondary border-opacity-25 rounded-3 p-3">
-    <div class="d-flex align-items-center gap-2 text-white small fw-semibold mb-1">
-      <span class="badge bg-success p-1 rounded-circle" style="width: 8px; height: 8px;"> </span>
-      <i class="bi bi-database-check text-info"></i> PostgreSQL 18
-    </div>
-    <small class="text-secondary" style="font-size: 0.7rem;">Tiruppur Export / Domestic Hub</small>
+  <!-- Cluster Badge / Footer -->
+  <div class="mt-3">
+    @if (!sidebarService.isCollapsed()) {
+      <div class="card bg-dark border border-secondary border-opacity-25 rounded-3 p-3">
+        <div class="d-flex align-items-center gap-2 text-white small fw-semibold mb-1">
+          <span class="badge bg-success p-1 rounded-circle" style="width: 8px; height: 8px;"> </span>
+          <i class="bi bi-database-check text-info"></i> PostgreSQL 18
+        </div>
+        <small class="text-secondary text-truncate d-block" style="font-size: 0.7rem;">Tiruppur Export / Domestic Hub</small>
+      </div>
+    } @else {
+      <div class="d-flex flex-column align-items-center py-2" title="PostgreSQL 18 Connected - Tiruppur Export / Domestic Hub">
+        <div class="position-relative">
+          <i class="bi bi-database-check fs-5 text-info"></i>
+          <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-dark rounded-circle" style="width: 8px; height: 8px;"></span>
+        </div>
+      </div>
+    }
   </div>
 </aside>
