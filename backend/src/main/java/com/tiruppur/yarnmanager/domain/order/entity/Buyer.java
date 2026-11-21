@@ -28,11 +28,11 @@ public class Buyer {
     @Column(length = 200)
     private String brandNames; // e.g. 'Zara Man, Zara Kids, TRF'
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, columnDefinition = "varchar(100) default 'India'")
     @Builder.Default
     private String country = "India";
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10, nullable = false, columnDefinition = "varchar(10) default 'USD'")
     @Builder.Default
     private String currency = "USD"; // USD, EUR, GBP, INR
 
@@ -57,10 +57,11 @@ public class Buyer {
     @Column(length = 150)
     private String shippingPort; // e.g., 'Tuticorin Port (VOCPT)', 'Chennai Port'
 
-    @Column(precision = 5, scale = 2)
+    @Column(precision = 5, scale = 2, columnDefinition = "numeric(5,2) default 5.00")
     @Builder.Default
     private BigDecimal tolerancePercentage = new BigDecimal("5.00"); // +/- 5% shipping allowance
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
     @Builder.Default
     private boolean active = true;
 
