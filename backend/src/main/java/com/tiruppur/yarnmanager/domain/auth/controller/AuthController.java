@@ -5,9 +5,11 @@ import com.tiruppur.yarnmanager.domain.auth.dto.LoginRequest;
 import com.tiruppur.yarnmanager.domain.auth.dto.LoginResponse;
 import com.tiruppur.yarnmanager.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,9 +24,19 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Authenticate plant personnel (Admin, Supervisor, QC)")
+    @Operation(summary = "Authenticate plant personnel (Admin, Supervisor, QC, Yarn Manager, Dispatch)")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.authenticate(request);
         return ResponseEntity.ok(ApiResponse.ok(response, "Login successful"));
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Get current authenticated user profile", security = @SecurityRequirement(name = "Bearer Authentication"))
+    public ResponseEntity<ApiResponse<LoginResponse>> me(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Not authenticated"));
+        }
+        LoginResponse profile = authService.getCurrentUserProfile(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.ok(profile, "User profile retrieved successfully"));
     }
 }

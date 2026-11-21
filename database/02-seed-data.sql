@@ -2,6 +2,14 @@
 -- SEED DATA: Realistic Tiruppur Knitwear Operations
 -- ====================================================================
 
+-- 0. Plant Personnel & Roles (Passwords: admin123, super123, qc123, yarn123, dispatch123)
+INSERT INTO users (username, password, full_name, role, active) VALUES
+('admin', '$2a$10$8MjTPtR2BpPweOOc0MuKXenBKBxomS0mwVNDgokYq9jpaWtyt/S3O', 'Ramasamy (Managing Director)', 'ROLE_ADMIN', true),
+('supervisor', '$2a$10$3Vw7MKn43pnb5aiWG7OciOLiwgaxbWTthho6qvXx3AudWhyCvNiAK', 'Muruganandam (Knitting & Sewing Head)', 'ROLE_KNITTING_SUPERVISOR', true),
+('qc_lead', '$2a$10$ZeAE5HK89RGLu6FGjI8Qt.yz3eUlKDBBd6uiE6cMhHFQXGiWg1NiO', 'Senthil Kumar (Quality Head)', 'ROLE_QC_INSPECTOR', true),
+('yarn_mgr', '$2a$10$sJLlMr2xNHvAt4aZx8B9O.QynOyLMlst/k95uQBy1oQrEMQ5O/jWm', 'Palanisamy (Yarn Procurement Head)', 'ROLE_YARN_MANAGER', true),
+('dispatch_officer', '$2a$10$bol.LvJ2VNJTZ.28.B2zE.3LthDnJGHFJxvBNz36sj.DBwJTzsWJi', 'Karthik (Logistics & Shipping Officer)', 'ROLE_DISPATCH_OFFICER', true);
+
 -- 1. Buyers
 INSERT INTO buyers (name, buyer_code, country, contact_person, contact_email) VALUES
 ('Zara Sourcing Europe', 'BUYER-ZARA-01', 'Spain', 'Carlos Mendez', 'carlos@inditex.com'),
