@@ -1,10 +1,13 @@
 package com.tiruppur.yarnmanager.domain.master;
 
+import com.tiruppur.yarnmanager.domain.master.dto.ResolvedRateDto;
 import com.tiruppur.yarnmanager.domain.master.entity.CompanyMaster;
+import com.tiruppur.yarnmanager.domain.master.entity.CurrencyExchangeRate;
 import com.tiruppur.yarnmanager.domain.master.entity.PricingMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.ProductMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.UomMaster;
 import com.tiruppur.yarnmanager.domain.master.repository.CompanyMasterRepository;
+import com.tiruppur.yarnmanager.domain.master.repository.CurrencyExchangeRateRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.PricingMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.ProductMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.UomMasterRepository;
@@ -45,12 +48,15 @@ class MasterDataServiceTest {
     @Mock
     private ProductMasterRepository productRepository;
 
+    @Mock
+    private CurrencyExchangeRateRepository exchangeRateRepository;
+
     private MasterDataService masterDataService;
 
     @BeforeEach
     void setUp() {
         masterDataService = new MasterDataService(
-                uomRepository, buyerRepository, pricingRepository, companyRepository, productRepository);
+                uomRepository, buyerRepository, pricingRepository, companyRepository, productRepository, exchangeRateRepository);
     }
 
     @Test
@@ -167,6 +173,48 @@ class MasterDataServiceTest {
         assertNotNull(resolved);
         assertEquals("RATE-DYE-DARK", resolved.getPriceCode());
         assertEquals(new BigDecimal("95.00"), resolved.getBaseRate());
+    }
+
+    @Test
+    @DisplayName("Should resolve rate and convert currency for calendar order date")
+    void shouldResolveRateWithCurrencyConversion() {
+        LocalDate orderDate = LocalDate.of(2026, 10, 15);
+        PricingMaster octRate = PricingMaster.builder()
+                .priceCode("RATE-KNIT-SJ-24-OCT26")
+                .processType("KNITTING_JOBWORK")
+                .categoryOrSpec("Single Jersey 24GG")
+                .uomCode("KG")
+                .baseRate(new BigDecimal("170.00"))
+                .currency("INR")
+                .effectiveFrom(LocalDate.of(2026, 10, 1))
+                .effectiveTo(LocalDate.of(2026, 10, 31))
+                .active(true)
+                .build();
+
+        CurrencyExchangeRate usdRate = CurrencyExchangeRate.builder()
+                .fromCurrency("USD")
+                .toCurrency("INR")
+                .exchangeRate(new BigDecimal("85.000000"))
+                .effectiveDate(LocalDate.of(2026, 10, 1))
+                .active(true)
+                .build();
+
+        when(pricingRepository.findMatchingRates(eq("KNITTING_JOBWORK"), eq("Single Jersey 24GG"), eq(orderDate), isNull()))
+                .thenReturn(List.of(octRate));
+        when(exchangeRateRepository.findEffectiveRates(eq("INR"), eq("USD"), eq(orderDate)))
+                .thenReturn(List.of());
+        when(exchangeRateRepository.findEffectiveRates(eq("USD"), eq("INR"), eq(orderDate)))
+                .thenReturn(List.of(usdRate));
+
+        ResolvedRateDto resolved = masterDataService.resolveEffectiveRateWithConversion(
+                "KNITTING_JOBWORK", "Single Jersey 24GG", null, orderDate, "USD");
+
+        assertNotNull(resolved);
+        assertEquals("INR", resolved.getBaseCurrency());
+        assertEquals("USD", resolved.getTargetCurrency());
+        assertEquals(new BigDecimal("170.00"), resolved.getBaseRate());
+        // 170 / 85 = 2.0000 USD
+        assertEquals(new BigDecimal("2.0000"), resolved.getConvertedRate());
     }
 
     @Test

@@ -1,10 +1,13 @@
 package com.tiruppur.yarnmanager.domain.master.service;
 
+import com.tiruppur.yarnmanager.domain.master.dto.ResolvedRateDto;
 import com.tiruppur.yarnmanager.domain.master.entity.CompanyMaster;
+import com.tiruppur.yarnmanager.domain.master.entity.CurrencyExchangeRate;
 import com.tiruppur.yarnmanager.domain.master.entity.PricingMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.ProductMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.UomMaster;
 import com.tiruppur.yarnmanager.domain.master.repository.CompanyMasterRepository;
+import com.tiruppur.yarnmanager.domain.master.repository.CurrencyExchangeRateRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.PricingMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.ProductMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.UomMasterRepository;
@@ -27,17 +30,20 @@ public class MasterDataService {
     private final PricingMasterRepository pricingRepository;
     private final CompanyMasterRepository companyRepository;
     private final ProductMasterRepository productRepository;
+    private final CurrencyExchangeRateRepository exchangeRateRepository;
 
     public MasterDataService(UomMasterRepository uomRepository,
                              BuyerRepository buyerRepository,
                              PricingMasterRepository pricingRepository,
                              CompanyMasterRepository companyRepository,
-                             ProductMasterRepository productRepository) {
+                             ProductMasterRepository productRepository,
+                             CurrencyExchangeRateRepository exchangeRateRepository) {
         this.uomRepository = uomRepository;
         this.buyerRepository = buyerRepository;
         this.pricingRepository = pricingRepository;
         this.companyRepository = companyRepository;
         this.productRepository = productRepository;
+        this.exchangeRateRepository = exchangeRateRepository;
     }
 
     // ==========================================
@@ -216,6 +222,15 @@ public class MasterDataService {
     // ==========================================
     @Transactional(readOnly = true)
     public List<PricingMaster> getAllPrices(Boolean activeOnly, String processType) {
+        return getAllPrices(activeOnly, processType, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PricingMaster> getAllPrices(Boolean activeOnly, String processType, LocalDate effectiveDate) {
+        if (effectiveDate != null) {
+            String proc = (processType != null && !processType.isBlank()) ? processType.toUpperCase().trim() : null;
+            return pricingRepository.findByEffectiveDateAndProcessType(effectiveDate, proc);
+        }
         if (processType != null && !processType.isBlank()) {
             return pricingRepository.findByProcessTypeAndActiveTrue(processType.toUpperCase().trim());
         }
@@ -241,19 +256,126 @@ public class MasterDataService {
 
     @Transactional(readOnly = true)
     public PricingMaster resolveEffectiveRate(String processType, String category, Long buyerId) {
+        return resolveEffectiveRate(processType, category, buyerId, LocalDate.now());
+    }
+
+    @Transactional(readOnly = true)
+    public PricingMaster resolveEffectiveRate(String processType, String category, Long buyerId, LocalDate date) {
+        LocalDate refDate = (date != null) ? date : LocalDate.now();
         List<PricingMaster> matching = pricingRepository.findMatchingRates(
                 processType.toUpperCase().trim(),
                 category.trim(),
-                LocalDate.now(),
+                refDate,
                 buyerId
         );
 
         if (matching.isEmpty()) {
             throw new IllegalArgumentException(
-                    "No active pricing rate found for process: " + processType + ", spec: " + category);
+                    "No active pricing rate found for process: " + processType + ", spec: " + category + " as of " + refDate);
         }
 
-        // Return first match (buyer-specific rate takes priority over global default)
         return matching.get(0);
+    }
+
+    @Transactional(readOnly = true)
+    public ResolvedRateDto resolveEffectiveRateWithConversion(String processType, String category, Long buyerId,
+                                                              LocalDate date, String targetCurrency) {
+        LocalDate refDate = (date != null) ? date : LocalDate.now();
+        PricingMaster baseRate = resolveEffectiveRate(processType, category, buyerId, refDate);
+
+        String baseCurr = (baseRate.getCurrency() != null && !baseRate.getCurrency().isBlank()) ? baseRate.getCurrency() : "INR";
+        String targetCurr = (targetCurrency != null && !targetCurrency.isBlank()) ? targetCurrency.toUpperCase().trim() : baseCurr;
+
+        BigDecimal converted = baseRate.getBaseRate();
+        BigDecimal exchangeRate = BigDecimal.ONE;
+        String note = "Rate in base currency (" + baseCurr + ")";
+
+        if (!baseCurr.equalsIgnoreCase(targetCurr)) {
+            converted = convertCurrency(baseRate.getBaseRate(), baseCurr, targetCurr, refDate);
+            if (baseRate.getBaseRate().compareTo(BigDecimal.ZERO) > 0) {
+                exchangeRate = converted.divide(baseRate.getBaseRate(), 6, RoundingMode.HALF_UP);
+            }
+            note = "Converted from " + baseCurr + " to " + targetCurr + " as of " + refDate;
+        }
+
+        return ResolvedRateDto.builder()
+                .pricingMaster(baseRate)
+                .effectiveDate(refDate)
+                .baseRate(baseRate.getBaseRate())
+                .baseCurrency(baseCurr)
+                .targetCurrency(targetCurr)
+                .convertedRate(converted)
+                .exchangeRateUsed(exchangeRate)
+                .note(note)
+                .build();
+    }
+
+    // ==========================================
+    // 6. Currency Exchange Rate Operations
+    // ==========================================
+    @Transactional(readOnly = true)
+    public List<CurrencyExchangeRate> getAllExchangeRates(String calendarMonth) {
+        if (calendarMonth != null && !calendarMonth.isBlank()) {
+            return exchangeRateRepository.findByCalendarMonthAndActiveTrue(calendarMonth.trim());
+        }
+        return exchangeRateRepository.findByActiveTrueOrderByEffectiveDateDesc();
+    }
+
+    public CurrencyExchangeRate saveExchangeRate(CurrencyExchangeRate exchangeRate) {
+        exchangeRate.setFromCurrency(exchangeRate.getFromCurrency().toUpperCase().trim());
+        exchangeRate.setToCurrency(exchangeRate.getToCurrency().toUpperCase().trim());
+        if (exchangeRate.getCalendarMonth() == null && exchangeRate.getEffectiveDate() != null) {
+            exchangeRate.setCalendarMonth(exchangeRate.getEffectiveDate().getYear() + "-" +
+                    String.format("%02d", exchangeRate.getEffectiveDate().getMonthValue()));
+        }
+        return exchangeRateRepository.save(exchangeRate);
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal convertCurrency(BigDecimal amount, String fromCurrency, String toCurrency, LocalDate date) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        String from = fromCurrency.toUpperCase().trim();
+        String to = toCurrency.toUpperCase().trim();
+
+        if (from.equals(to)) {
+            return amount;
+        }
+
+        LocalDate refDate = (date != null) ? date : LocalDate.now();
+
+        // 1. Check direct rate: from -> to
+        List<CurrencyExchangeRate> direct = exchangeRateRepository.findEffectiveRates(from, to, refDate);
+        if (!direct.isEmpty()) {
+            return amount.multiply(direct.get(0).getExchangeRate()).setScale(4, RoundingMode.HALF_UP);
+        }
+
+        // 2. Check inverse rate: to -> from
+        List<CurrencyExchangeRate> inverse = exchangeRateRepository.findEffectiveRates(to, from, refDate);
+        if (!inverse.isEmpty()) {
+            return amount.divide(inverse.get(0).getExchangeRate(), 4, RoundingMode.HALF_UP);
+        }
+
+        // 3. Fallback: Convert via INR base
+        if (!from.equals("INR") && !to.equals("INR")) {
+            BigDecimal inrAmount = convertCurrency(amount, from, "INR", refDate);
+            return convertCurrency(inrAmount, "INR", to, refDate);
+        }
+
+        // 4. Default Static Fallback Rates if not present in DB
+        BigDecimal fallbackRate = getFallbackRate(from, to);
+        return amount.multiply(fallbackRate).setScale(4, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal getFallbackRate(String from, String to) {
+        if (from.equals("USD") && to.equals("INR")) return new BigDecimal("86.5000");
+        if (from.equals("INR") && to.equals("USD")) return new BigDecimal("0.01156");
+        if (from.equals("EUR") && to.equals("INR")) return new BigDecimal("91.2000");
+        if (from.equals("INR") && to.equals("EUR")) return new BigDecimal("0.01096");
+        if (from.equals("GBP") && to.equals("INR")) return new BigDecimal("109.8000");
+        if (from.equals("INR") && to.equals("GBP")) return new BigDecimal("0.00910");
+        return BigDecimal.ONE;
     }
 }

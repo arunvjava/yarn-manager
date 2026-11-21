@@ -4,10 +4,12 @@ import com.tiruppur.yarnmanager.domain.auth.entity.Role;
 import com.tiruppur.yarnmanager.domain.auth.entity.User;
 import com.tiruppur.yarnmanager.domain.auth.repository.UserRepository;
 import com.tiruppur.yarnmanager.domain.master.entity.CompanyMaster;
+import com.tiruppur.yarnmanager.domain.master.entity.CurrencyExchangeRate;
 import com.tiruppur.yarnmanager.domain.master.entity.PricingMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.ProductMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.UomMaster;
 import com.tiruppur.yarnmanager.domain.master.repository.CompanyMasterRepository;
+import com.tiruppur.yarnmanager.domain.master.repository.CurrencyExchangeRateRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.PricingMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.ProductMasterRepository;
 import com.tiruppur.yarnmanager.domain.master.repository.UomMasterRepository;
@@ -35,6 +37,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PricingMasterRepository pricingRepository;
     private final CompanyMasterRepository companyRepository;
     private final ProductMasterRepository productRepository;
+    private final CurrencyExchangeRateRepository exchangeRateRepository;
 
     public DataInitializer(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
@@ -42,7 +45,8 @@ public class DataInitializer implements CommandLineRunner {
                            BuyerRepository buyerRepository,
                            PricingMasterRepository pricingRepository,
                            CompanyMasterRepository companyRepository,
-                           ProductMasterRepository productRepository) {
+                           ProductMasterRepository productRepository,
+                           CurrencyExchangeRateRepository exchangeRateRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.uomRepository = uomRepository;
@@ -50,6 +54,7 @@ public class DataInitializer implements CommandLineRunner {
         this.pricingRepository = pricingRepository;
         this.companyRepository = companyRepository;
         this.productRepository = productRepository;
+        this.exchangeRateRepository = exchangeRateRepository;
     }
 
     @Override
@@ -60,6 +65,7 @@ public class DataInitializer implements CommandLineRunner {
         initUoms();
         initCustomers();
         initPricing();
+        initExchangeRates();
     }
 
     private void initUsers() {
@@ -285,65 +291,92 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initPricing() {
-        if (pricingRepository.count() == 0) {
-            logger.info("Initializing Pricing Master rate cards...");
-            LocalDate now = LocalDate.now();
-            List<PricingMaster> rateCards = List.of(
-                // Knitting Job-Work Rates
-                PricingMaster.builder().priceCode("RATE-KNIT-SJ-24").processType("KNITTING_JOBWORK")
-                    .categoryOrSpec("Single Jersey 24GG").uomCode("KG").baseRate(new BigDecimal("18.00"))
-                    .currency("INR").effectiveFrom(now).notes("Standard 180 GSM circular knitting").active(true).build(),
+        LocalDate currentMonthStart = LocalDate.of(2026, 11, 1);
+        LocalDate previousMonthStart = LocalDate.of(2026, 10, 1);
+        LocalDate previousMonthEnd = LocalDate.of(2026, 10, 31);
 
-                PricingMaster.builder().priceCode("RATE-KNIT-RIB-18").processType("KNITTING_JOBWORK")
-                    .categoryOrSpec("1x1 Rib 18GG").uomCode("KG").baseRate(new BigDecimal("22.00"))
-                    .currency("INR").effectiveFrom(now).notes("Neck rib & cuff knit").active(true).build(),
+        // Previous Month (October 2026) Rates
+        seedRateIfNotExists("RATE-KNIT-SJ-24-OCT26", "KNITTING_JOBWORK", "Single Jersey 24GG", "KG",
+                new BigDecimal("17.00"), "INR", previousMonthStart, previousMonthEnd, "October 2026 Rate");
+        seedRateIfNotExists("RATE-DYE-DARK-OCT26", "DYEING_JOBWORK", "Dark Shade (Navy / Olive / Maroon)", "KG",
+                new BigDecimal("90.00"), "INR", previousMonthStart, previousMonthEnd, "October 2026 Dyeing Rate");
+        seedRateIfNotExists("RATE-SEW-CREW-OCT26", "SEWING_CM", "Basic Crew Neck T-Shirt", "PCS",
+                new BigDecimal("17.50"), "INR", previousMonthStart, previousMonthEnd, "October 2026 Sewing CM");
+        seedRateIfNotExists("RATE-YARN-30SC-OCT26", "YARN_PURCHASE", "30s Combed Cotton Cone Yarn", "KG",
+                new BigDecimal("275.00"), "INR", previousMonthStart, previousMonthEnd, "October 2026 Spot Rate");
 
-                PricingMaster.builder().priceCode("RATE-KNIT-INT-28").processType("KNITTING_JOBWORK")
-                    .categoryOrSpec("Interlock 28GG").uomCode("KG").baseRate(new BigDecimal("25.00"))
-                    .currency("INR").effectiveFrom(now).notes("Heavy interlock double jersey").active(true).build(),
+        // Current Month (November 2026 onwards) Rates
+        seedRateIfNotExists("RATE-KNIT-SJ-24", "KNITTING_JOBWORK", "Single Jersey 24GG", "KG",
+                new BigDecimal("18.00"), "INR", currentMonthStart, null, "Standard 180 GSM circular knitting");
+        seedRateIfNotExists("RATE-KNIT-RIB-18", "KNITTING_JOBWORK", "1x1 Rib 18GG", "KG",
+                new BigDecimal("22.00"), "INR", currentMonthStart, null, "Neck rib & cuff knit");
+        seedRateIfNotExists("RATE-KNIT-INT-28", "KNITTING_JOBWORK", "Interlock 28GG", "KG",
+                new BigDecimal("25.00"), "INR", currentMonthStart, null, "Heavy interlock double jersey");
 
-                // Dyeing Job-Work Rates (by shade depth)
-                PricingMaster.builder().priceCode("RATE-DYE-LIGHT").processType("DYEING_JOBWORK")
-                    .categoryOrSpec("Light Shade (Pastel / Off-White)").uomCode("KG").baseRate(new BigDecimal("55.00"))
-                    .currency("INR").effectiveFrom(now).notes("Low dye concentration").active(true).build(),
+        seedRateIfNotExists("RATE-DYE-LIGHT", "DYEING_JOBWORK", "Light Shade (Pastel / Off-White)", "KG",
+                new BigDecimal("55.00"), "INR", currentMonthStart, null, "Low dye concentration");
+        seedRateIfNotExists("RATE-DYE-MED", "DYEING_JOBWORK", "Medium Shade (Sky Blue / Coral)", "KG",
+                new BigDecimal("75.00"), "INR", currentMonthStart, null, "Medium depth shade");
+        seedRateIfNotExists("RATE-DYE-DARK", "DYEING_JOBWORK", "Dark Shade (Navy / Olive / Maroon)", "KG",
+                new BigDecimal("95.00"), "INR", currentMonthStart, null, "Standard dark shade reactive dyeing");
+        seedRateIfNotExists("RATE-DYE-BLACK", "DYEING_JOBWORK", "Jet Black (Reactive)", "KG",
+                new BigDecimal("110.00"), "INR", currentMonthStart, null, "Extra depth reactive black with wash-off");
 
-                PricingMaster.builder().priceCode("RATE-DYE-MED").processType("DYEING_JOBWORK")
-                    .categoryOrSpec("Medium Shade (Sky Blue / Coral)").uomCode("KG").baseRate(new BigDecimal("75.00"))
-                    .currency("INR").effectiveFrom(now).notes("Medium depth shade").active(true).build(),
+        seedRateIfNotExists("RATE-BIO-POLISH", "FINISHING", "Enzyme Bio-Polishing", "KG",
+                new BigDecimal("16.00"), "INR", currentMonthStart, null, "Cellulase enzyme treatment for zero fuzz");
 
-                PricingMaster.builder().priceCode("RATE-DYE-DARK").processType("DYEING_JOBWORK")
-                    .categoryOrSpec("Dark Shade (Navy / Olive / Maroon)").uomCode("KG").baseRate(new BigDecimal("95.00"))
-                    .currency("INR").effectiveFrom(now).notes("Standard dark shade reactive dyeing").active(true).build(),
+        seedRateIfNotExists("RATE-SEW-CREW", "SEWING_CM", "Basic Crew Neck T-Shirt", "PCS",
+                new BigDecimal("18.50"), "INR", currentMonthStart, null, "Standard 4-thread overlock + flatlock hem");
+        seedRateIfNotExists("RATE-SEW-POLO", "SEWING_CM", "Pique Polo Tee with Placket", "PCS",
+                new BigDecimal("34.00"), "INR", currentMonthStart, null, "Rib collar, box placket, 2-button attachment");
 
-                PricingMaster.builder().priceCode("RATE-DYE-BLACK").processType("DYEING_JOBWORK")
-                    .categoryOrSpec("Jet Black (Reactive)").uomCode("KG").baseRate(new BigDecimal("110.00"))
-                    .currency("INR").effectiveFrom(now).notes("Extra depth reactive black with wash-off").active(true).build(),
+        seedRateIfNotExists("RATE-YARN-30SC", "YARN_PURCHASE", "30s Combed Cotton Cone Yarn", "KG",
+                new BigDecimal("285.00"), "INR", currentMonthStart, null, "KPR / Ramco Mill standard 30s combed");
+        seedRateIfNotExists("RATE-YARN-34SL", "YARN_PURCHASE", "34s Lycra Spun Yarn (95/5)", "KG",
+                new BigDecimal("340.00"), "INR", currentMonthStart, null, "Core spun Lycra for stretch tees");
+    }
 
-                // Finishing & Bio-Polish
-                PricingMaster.builder().priceCode("RATE-BIO-POLISH").processType("FINISHING")
-                    .categoryOrSpec("Enzyme Bio-Polishing").uomCode("KG").baseRate(new BigDecimal("16.00"))
-                    .currency("INR").effectiveFrom(now).notes("Cellulase enzyme treatment for zero fuzz").active(true).build(),
+    private void seedRateIfNotExists(String code, String proc, String spec, String uom, BigDecimal rate,
+                                     String curr, LocalDate from, LocalDate to, String notes) {
+        if (pricingRepository.findByPriceCode(code).isEmpty()) {
+            pricingRepository.save(PricingMaster.builder()
+                    .priceCode(code)
+                    .processType(proc)
+                    .categoryOrSpec(spec)
+                    .uomCode(uom)
+                    .baseRate(rate)
+                    .currency(curr)
+                    .effectiveFrom(from)
+                    .effectiveTo(to)
+                    .notes(notes)
+                    .active(true)
+                    .build());
+        }
+    }
 
-                // Sewing Cut-to-Make (CM) Rates
-                PricingMaster.builder().priceCode("RATE-SEW-CREW").processType("SEWING_CM")
-                    .categoryOrSpec("Basic Crew Neck T-Shirt").uomCode("PCS").baseRate(new BigDecimal("18.50"))
-                    .currency("INR").effectiveFrom(now).notes("Standard 4-thread overlock + flatlock hem").active(true).build(),
+    private void initExchangeRates() {
+        if (exchangeRateRepository.count() == 0) {
+            logger.info("Initializing Currency Exchange Rates (USD, EUR, GBP to INR)...");
 
-                PricingMaster.builder().priceCode("RATE-SEW-POLO").processType("SEWING_CM")
-                    .categoryOrSpec("Pique Polo Tee with Placket").uomCode("PCS").baseRate(new BigDecimal("34.00"))
-                    .currency("INR").effectiveFrom(now).notes("Rib collar, box placket, 2-button attachment").active(true).build(),
+            List<CurrencyExchangeRate> rates = List.of(
+                // October 2026 (Previous Month Calendar Rate)
+                CurrencyExchangeRate.builder().fromCurrency("USD").toCurrency("INR").exchangeRate(new BigDecimal("85.800000"))
+                    .effectiveDate(LocalDate.of(2026, 10, 1)).calendarMonth("2026-10").source("RBI Monthly Reference (Oct 2026)").active(true).build(),
+                CurrencyExchangeRate.builder().fromCurrency("EUR").toCurrency("INR").exchangeRate(new BigDecimal("90.500000"))
+                    .effectiveDate(LocalDate.of(2026, 10, 1)).calendarMonth("2026-10").source("RBI Monthly Reference (Oct 2026)").active(true).build(),
+                CurrencyExchangeRate.builder().fromCurrency("GBP").toCurrency("INR").exchangeRate(new BigDecimal("108.500000"))
+                    .effectiveDate(LocalDate.of(2026, 10, 1)).calendarMonth("2026-10").source("RBI Monthly Reference (Oct 2026)").active(true).build(),
 
-                // Raw Material Yarn Purchase Rates
-                PricingMaster.builder().priceCode("RATE-YARN-30SC").processType("YARN_PURCHASE")
-                    .categoryOrSpec("30s Combed Cotton Cone Yarn").uomCode("KG").baseRate(new BigDecimal("285.00"))
-                    .currency("INR").effectiveFrom(now).notes("KPR / Ramco Mill standard 30s combed").active(true).build(),
-
-                PricingMaster.builder().priceCode("RATE-YARN-34SL").processType("YARN_PURCHASE")
-                    .categoryOrSpec("34s Lycra Spun Yarn (95/5)").uomCode("KG").baseRate(new BigDecimal("340.00"))
-                    .currency("INR").effectiveFrom(now).notes("Core spun Lycra for stretch tees").active(true).build()
+                // November 2026 (Current Month Calendar Rate)
+                CurrencyExchangeRate.builder().fromCurrency("USD").toCurrency("INR").exchangeRate(new BigDecimal("86.500000"))
+                    .effectiveDate(LocalDate.of(2026, 11, 1)).calendarMonth("2026-11").source("RBI Monthly Reference (Nov 2026)").active(true).build(),
+                CurrencyExchangeRate.builder().fromCurrency("EUR").toCurrency("INR").exchangeRate(new BigDecimal("91.200000"))
+                    .effectiveDate(LocalDate.of(2026, 11, 1)).calendarMonth("2026-11").source("RBI Monthly Reference (Nov 2026)").active(true).build(),
+                CurrencyExchangeRate.builder().fromCurrency("GBP").toCurrency("INR").exchangeRate(new BigDecimal("109.800000"))
+                    .effectiveDate(LocalDate.of(2026, 11, 1)).calendarMonth("2026-11").source("RBI Monthly Reference (Nov 2026)").active(true).build()
             );
-            pricingRepository.saveAll(rateCards);
-            logger.info("Saved {} pricing rate cards.", rateCards.size());
+            exchangeRateRepository.saveAll(rates);
+            logger.info("Saved {} currency exchange rate records.", rates.size());
         }
     }
 }

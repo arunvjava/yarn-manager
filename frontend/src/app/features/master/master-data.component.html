@@ -6,7 +6,7 @@
         <h3 class="fw-bold mb-0 text-body">Master Data Management Hub</h3>
         <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">ERP Core</span>
       </div>
-      <p class="text-secondary small mb-0 mt-1">Configure companies, garment products, customer accounts, units of measure, and process pricing.</p>
+      <p class="text-secondary small mb-0 mt-1">Configure companies, garment products, customer accounts, units of measure, calendar-based pricing, and currency exchange rates.</p>
     </div>
 
     <!-- Quick Action / Refresh -->
@@ -78,7 +78,16 @@
               (click)="setTab('pricing')">
         <i class="bi bi-currency-rupee"></i>
         <span>Pricing Rate Cards</span>
-        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-body ms-1">{{ pricingRules().length }}</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-body ms-1">{{ filteredPricingRules().length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link d-flex align-items-center gap-2 px-3 py-2 fw-semibold"
+              [class.active]="activeTab() === 'exchange'"
+              (click)="setTab('exchange')">
+        <i class="bi bi-arrow-left-right"></i>
+        <span>Currency Exchange Rates</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-body ms-1">{{ exchangeRates().length }}</span>
       </button>
     </li>
   </ul>
@@ -199,23 +208,21 @@
                       <small class="text-secondary">IEC: {{ c.iecCode }}</small>
                     }
                   </td>
-                  <td><span class="text-secondary small">{{ c.unitOrDivision || 'General' }}</span></td>
+                  <td><small class="text-secondary">{{ c.unitOrDivision || 'Headquarters' }}</small></td>
                   <td>
-                    <div class="font-monospace small">{{ c.gstin }}</div>
-                    @if (c.pan) {
-                      <small class="text-secondary font-monospace">PAN: {{ c.pan }}</small>
-                    }
+                    <div class="small fw-semibold">{{ c.gstin }}</div>
+                    <small class="text-secondary">{{ c.pan }}</small>
                   </td>
-                  <td><small class="text-secondary text-truncate d-inline-block" style="max-width: 200px;">{{ c.registeredAddress }}</small></td>
+                  <td><small class="text-secondary text-truncate d-block" style="max-width: 250px;">{{ c.registeredAddress }}</small></td>
                   <td>
-                    <div>{{ c.contactEmail || '-' }}</div>
+                    <small class="d-block">{{ c.contactPerson }}</small>
                     <small class="text-secondary">{{ c.contactPhone }}</small>
                   </td>
                   <td>
                     @if (c.primary) {
-                      <span class="badge bg-success">Primary HQ</span>
+                      <span class="badge bg-primary">Primary HQ</span>
                     } @else {
-                      <span class="badge bg-secondary-subtle text-secondary">Branch / Unit</span>
+                      <span class="badge bg-secondary-subtle text-body">Division</span>
                     }
                   </td>
                   <td class="text-end pe-3">
@@ -224,7 +231,7 @@
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="8" class="text-center py-4 text-secondary">No company profiles registered.</td>
+                  <td colspan="8" class="text-center py-4 text-secondary">No registered companies found.</td>
                 </tr>
               }
             </tbody>
@@ -241,78 +248,73 @@
     <div class="card border-0 shadow-sm mb-4">
       <div class="card-header bg-body d-flex justify-content-between align-items-center py-3">
         <div>
-          <h5 class="mb-0 fw-bold">Garment Product &amp; Style Catalog</h5>
-          <small class="text-secondary">Standard tech-pack specifications, knit structures, yarn counts, and SMV benchmarks.</small>
+          <h5 class="mb-0 fw-bold">Garment Product Catalog &amp; Style Master</h5>
+          <small class="text-secondary">Standard tech-pack specifications, yarn count, target GSM, and labor SMV.</small>
         </div>
         <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" (click)="showProductForm.set(!showProductForm())">
           <i class="bi" [class.bi-plus-lg]="!showProductForm()" [class.bi-x-lg]="showProductForm()"></i>
-          <span>{{ showProductForm() ? 'Cancel' : '+ Add Product / Style' }}</span>
+          <span>{{ showProductForm() ? 'Cancel' : '+ Add Garment Style' }}</span>
         </button>
       </div>
 
       <!-- Add Product Form -->
       @if (showProductForm()) {
         <div class="card-body border-bottom bg-body-tertiary p-4">
-          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-tag-fill me-1"></i> New Product / Garment Style</h6>
+          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-plus-circle me-1"></i> New Garment Product / Style</h6>
           <form (ngSubmit)="submitProduct()">
             <div class="row g-3">
               <div class="col-md-3">
                 <label class="form-label small fw-semibold">Style / Product Code *</label>
-                <input type="text" class="form-control text-uppercase font-monospace" [(ngModel)]="newProduct.productCode" name="productCode" placeholder="e.g. STY-POLO-220" required>
+                <input type="text" class="form-control text-uppercase" [(ngModel)]="newProduct.productCode" name="productCode" placeholder="e.g. STY-POLO-240" required>
               </div>
-              <div class="col-md-6">
-                <label class="form-label small fw-semibold">Style Name *</label>
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold">Style Description *</label>
                 <input type="text" class="form-control" [(ngModel)]="newProduct.styleName" name="styleName" placeholder="e.g. Men Pique Polo Shirt with Flat Knit Collar" required>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <label class="form-label small fw-semibold">Category</label>
                 <select class="form-select" [(ngModel)]="newProduct.category" name="category">
-                  <option value="MEN_ROUND_NECK">Men Round Neck T-Shirt</option>
+                  <option value="MEN_ROUND_NECK">Men Crew Neck T-Shirt</option>
                   <option value="MEN_POLO">Men Polo Shirt</option>
-                  <option value="HOODIE">Unisex Fleece Hoodie</option>
-                  <option value="JOGGERS">French Terry Joggers</option>
-                  <option value="WOMEN_TOP">Women Casual Top</option>
-                  <option value="KIDS_TEE">Kids Graphic Tee</option>
+                  <option value="HOODIE">Fleece Hoodie / Pullover</option>
+                  <option value="JOGGERS">Athletic Joggers / Track Pants</option>
+                  <option value="WOMEN_TOP">Women Top / Tee</option>
                 </select>
               </div>
 
-              <div class="col-md-3">
-                <label class="form-label small fw-semibold">Fabric Type *</label>
-                <input type="text" class="form-control" [(ngModel)]="newProduct.fabricType" name="fabricType" placeholder="Single Jersey, Pique, Rib" required>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Fabric Type</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.fabricType" name="fabricType" placeholder="Single Jersey / Pique / French Terry">
               </div>
-              <div class="col-md-3">
-                <label class="form-label small fw-semibold">Yarn Count Specification *</label>
-                <input type="text" class="form-control" [(ngModel)]="newProduct.yarnCount" name="yarnCount" placeholder="e.g. 30s Combed Cotton" required>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Yarn Count</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.yarnCount" name="yarnCount" placeholder="30s Combed / 34s Lycra / 24s Melange">
               </div>
               <div class="col-md-2">
                 <label class="form-label small fw-semibold">Target GSM *</label>
                 <input type="number" class="form-control" [(ngModel)]="newProduct.targetGsm" name="targetGsm" placeholder="180" required>
               </div>
               <div class="col-md-2">
-                <label class="form-label small fw-semibold">Sewing SMV (Mins)</label>
-                <input type="number" step="0.1" class="form-control" [(ngModel)]="newProduct.standardSmv" name="standardSmv" placeholder="12.50">
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small fw-semibold">HSN Code</label>
-                <input type="text" class="form-control" [(ngModel)]="newProduct.hsnCode" name="hsnCode" placeholder="61091000">
+                <label class="form-label small fw-semibold">Standard SMV (min)</label>
+                <input type="number" step="0.1" class="form-control" [(ngModel)]="newProduct.standardSmv" name="standardSmv" placeholder="12.5">
               </div>
 
               <div class="col-md-4">
-                <label class="form-label small fw-semibold">Neck Type / Construction</label>
-                <input type="text" class="form-control" [(ngModel)]="newProduct.neckType" name="neckType" placeholder="e.g. Rib Collar with 2-Button Placket">
+                <label class="form-label small fw-semibold">Neck Construction</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.neckType" name="neckType" placeholder="e.g. 1x1 Cotton Rib Neckband">
               </div>
               <div class="col-md-4">
-                <label class="form-label small fw-semibold">Sleeve Type</label>
-                <input type="text" class="form-control" [(ngModel)]="newProduct.sleeveType" name="sleeveType" placeholder="Half Sleeve with Rib Cuff">
+                <label class="form-label small fw-semibold">Sleeve Construction</label>
+                <input type="text" class="form-control" [(ngModel)]="newProduct.sleeveType" name="sleeveType" placeholder="e.g. Half Sleeve with 2-Needle Hem">
               </div>
               <div class="col-md-4">
-                <label class="form-label small fw-semibold">Size Scale Available</label>
+                <label class="form-label small fw-semibold">Available Sizes</label>
                 <input type="text" class="form-control" [(ngModel)]="newProduct.availableSizes" name="availableSizes" placeholder="S, M, L, XL, 2XL">
               </div>
 
               <div class="col-12 text-end mt-3">
                 <button type="button" class="btn btn-secondary btn-sm me-2" (click)="showProductForm.set(false)">Cancel</button>
-                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="isLoading()">Save Product</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="isLoading()">Save Product Style</button>
               </div>
             </div>
           </form>
@@ -325,12 +327,12 @@
             <thead class="table-light">
               <tr>
                 <th class="ps-3">Style Code</th>
-                <th>Style Name &amp; Silhouette</th>
-                <th>Fabric Construction</th>
-                <th>Yarn Count</th>
-                <th>GSM</th>
-                <th>Standard SMV</th>
-                <th>Sizes</th>
+                <th>Style Description</th>
+                <th>Category</th>
+                <th>Fabric &amp; Yarn</th>
+                <th>Target GSM</th>
+                <th>SMV</th>
+                <th>Size Curve</th>
                 <th class="text-end pe-3">Status</th>
               </tr>
             </thead>
@@ -338,28 +340,33 @@
               @for (p of products(); track p.id) {
                 <tr>
                   <td class="ps-3">
-                    <span class="badge bg-primary-subtle text-primary font-monospace px-2 py-1">{{ p.productCode }}</span>
+                    <span class="badge bg-dark-subtle text-body font-monospace px-2 py-1">{{ p.productCode }}</span>
                   </td>
                   <td>
                     <div class="fw-bold">{{ p.styleName }}</div>
-                    <small class="text-secondary">{{ p.category }} &bull; {{ p.neckType }}</small>
+                    @if (p.hsnCode) {
+                      <small class="text-secondary">HSN: {{ p.hsnCode }}</small>
+                    }
                   </td>
-                  <td><span class="badge bg-light text-dark border">{{ p.fabricType }}</span></td>
-                  <td><span class="text-secondary small">{{ p.yarnCount }}</span></td>
-                  <td><span class="fw-semibold">{{ p.targetGsm }} GSM</span></td>
                   <td>
-                    <span class="badge bg-warning-subtle text-warning-emphasis">
-                      <i class="bi bi-stopwatch me-1"></i>{{ p.standardSmv }} mins
-                    </span>
+                    <span class="badge bg-info-subtle text-info">{{ p.category }}</span>
                   </td>
-                  <td><small class="text-secondary font-monospace">{{ p.availableSizes }}</small></td>
+                  <td>
+                    <div class="small fw-semibold">{{ p.fabricType }}</div>
+                    <small class="text-secondary">{{ p.yarnCount }}</small>
+                  </td>
+                  <td>
+                    <span class="badge bg-secondary-subtle text-body">{{ p.targetGsm }} GSM</span>
+                  </td>
+                  <td>{{ p.standardSmv || '-' }} min</td>
+                  <td><small class="text-secondary">{{ p.availableSizes || 'Standard' }}</small></td>
                   <td class="text-end pe-3">
                     <span class="badge bg-success-subtle text-success">Active</span>
                   </td>
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="8" class="text-center py-4 text-secondary">No products configured.</td>
+                  <td colspan="8" class="text-center py-4 text-secondary">No garment styles registered.</td>
                 </tr>
               }
             </tbody>
@@ -376,24 +383,24 @@
     <div class="card border-0 shadow-sm mb-4">
       <div class="card-header bg-body d-flex justify-content-between align-items-center py-3">
         <div>
-          <h5 class="mb-0 fw-bold">Customer &amp; Buyer Accounts</h5>
-          <small class="text-secondary">Commercial contracts, payment terms, shipping destination ports, and export currencies.</small>
+          <h5 class="mb-0 fw-bold">Customer &amp; Export Buyer Accounts</h5>
+          <small class="text-secondary">International brands, billing currencies, destination ports, and shipment tolerance.</small>
         </div>
         <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" (click)="showCustomerForm.set(!showCustomerForm())">
           <i class="bi" [class.bi-plus-lg]="!showCustomerForm()" [class.bi-x-lg]="showCustomerForm()"></i>
-          <span>{{ showCustomerForm() ? 'Cancel' : '+ Add Customer / Buyer' }}</span>
+          <span>{{ showCustomerForm() ? 'Cancel' : '+ Add Buyer Account' }}</span>
         </button>
       </div>
 
       <!-- Add Customer Form -->
       @if (showCustomerForm()) {
         <div class="card-body border-bottom bg-body-tertiary p-4">
-          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-person-plus-fill me-1"></i> New Customer Master Profile</h6>
+          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-plus-circle me-1"></i> New Customer / Buyer Profile</h6>
           <form (ngSubmit)="submitCustomer()">
             <div class="row g-3">
               <div class="col-md-5">
-                <label class="form-label small fw-semibold">Legal Corporate Name *</label>
-                <input type="text" class="form-control" [(ngModel)]="newCustomer.name" name="name" placeholder="e.g. Next Retail UK Limited" required>
+                <label class="form-label small fw-semibold">Legal Company Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newCustomer.name" name="name" placeholder="e.g. Next Retail PLC" required>
               </div>
               <div class="col-md-3">
                 <label class="form-label small fw-semibold">Buyer Code *</label>
@@ -518,10 +525,69 @@
   <!-- ============================================================== -->
   @if (activeTab() === 'uom') {
     <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-body py-3">
-        <h5 class="mb-0 fw-bold">Units of Measure (UOM) &amp; Conversion Multipliers</h5>
-        <small class="text-secondary">Standard reference base units and automated cross-unit conversion factors.</small>
+      <div class="card-header bg-body d-flex justify-content-between align-items-center py-3">
+        <div>
+          <h5 class="mb-0 fw-bold">Units of Measure (UOM) &amp; Conversion Multipliers</h5>
+          <small class="text-secondary">Standard reference base units and automated cross-unit conversion factors.</small>
+        </div>
+        <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" (click)="showUomForm.set(!showUomForm())">
+          <i class="bi" [class.bi-plus-lg]="!showUomForm()" [class.bi-x-lg]="showUomForm()"></i>
+          <span>{{ showUomForm() ? 'Cancel' : '+ Add Unit of Measure' }}</span>
+        </button>
       </div>
+
+      <!-- Add UOM Form -->
+      @if (showUomForm()) {
+        <div class="card-body border-bottom bg-body-tertiary p-4">
+          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-plus-circle me-1"></i> New Unit of Measure (UOM)</h6>
+          <form (ngSubmit)="submitUom()">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">UOM Code *</label>
+                <input type="text" class="form-control text-uppercase font-monospace" [(ngModel)]="newUom.uomCode" name="uomCode" placeholder="e.g. BOX, YDS, BUNDLE" required>
+              </div>
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold">Unit Display Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newUom.uomName" name="uomName" placeholder="e.g. Carton Box (100 pcs)" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Category *</label>
+                <select class="form-select" [(ngModel)]="newUom.category" name="category">
+                  <option value="WEIGHT">WEIGHT (Base: KG)</option>
+                  <option value="COUNT">COUNT (Base: PCS)</option>
+                  <option value="LENGTH">LENGTH (Base: MTR)</option>
+                  <option value="PACKAGING">PACKAGING (Base: CTN / ROLL)</option>
+                  <option value="VOLUME">VOLUME (Base: LTR)</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Conversion Factor to Base Unit *</label>
+                <input type="number" step="0.000001" class="form-control font-monospace" [(ngModel)]="newUom.conversionFactor" name="conversionFactor" placeholder="1.000000" required>
+                <small class="text-secondary" style="font-size: 0.7rem;">e.g. 1 BAG = 45.36 KG, 1 DOZ = 12 PCS</small>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Decimal Precision</label>
+                <input type="number" class="form-control" [(ngModel)]="newUom.decimalPlaces" name="decimalPlaces" placeholder="2">
+              </div>
+              <div class="col-md-5 d-flex align-items-center pt-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="newUom.baseUom" name="baseUom" id="baseUomCheck">
+                  <label class="form-check-label small fw-semibold" for="baseUomCheck">
+                    Set as Primary Base Unit for this Category
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-12 text-end mt-3">
+                <button type="button" class="btn btn-secondary btn-sm me-2" (click)="showUomForm.set(false)">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="isLoading()">Save Unit of Measure</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      }
+
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
@@ -564,6 +630,10 @@
                     <span class="badge bg-success-subtle text-success">Active</span>
                   </td>
                 </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="text-center py-4 text-secondary">No Units of Measure found. Click "+ Add Unit of Measure" to register.</td>
+                </tr>
               }
             </tbody>
           </table>
@@ -573,14 +643,130 @@
   }
 
   <!-- ============================================================== -->
-  <!-- TAB 5: PRICING RATE CARDS -->
+  <!-- TAB 5: PRICING RATE CARDS (CALENDAR & MULTI-CURRENCY) -->
   <!-- ============================================================== -->
   @if (activeTab() === 'pricing') {
     <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-body py-3">
-        <h5 class="mb-0 fw-bold">Job-Work &amp; Process Pricing Rate Cards</h5>
-        <small class="text-secondary">Tiruppur mill rates for circular knitting, soft-flow dyeing, cut-to-make sewing, and raw yarn.</small>
+      <div class="card-header bg-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 py-3">
+        <div>
+          <h5 class="mb-0 fw-bold">Calendar-Based Process Rate Cards &amp; Pricing Master</h5>
+          <small class="text-secondary">Track rates across calendar months (e.g. Previous Month vs Current Month) with automatic multi-currency conversion.</small>
+        </div>
+        <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" (click)="showPricingForm.set(!showPricingForm())">
+          <i class="bi" [class.bi-plus-lg]="!showPricingForm()" [class.bi-x-lg]="showPricingForm()"></i>
+          <span>{{ showPricingForm() ? 'Cancel' : '+ Add Rate Card' }}</span>
+        </button>
       </div>
+
+      <!-- Calendar Month & Currency Conversion Toolbar -->
+      <div class="p-3 bg-body-tertiary border-bottom d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <!-- Calendar Period Filter -->
+        <div class="d-flex align-items-center gap-2">
+          <span class="small fw-bold text-secondary text-uppercase"><i class="bi bi-calendar3 me-1"></i>Calendar Period:</span>
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn" [class.btn-primary]="selectedCalendarPeriod() === 'ALL'" [class.btn-outline-secondary]="selectedCalendarPeriod() !== 'ALL'" (click)="selectedCalendarPeriod.set('ALL')">All Periods</button>
+            <button type="button" class="btn" [class.btn-primary]="selectedCalendarPeriod() === '2026-11'" [class.btn-outline-secondary]="selectedCalendarPeriod() !== '2026-11'" (click)="selectedCalendarPeriod.set('2026-11')">Current Month (Nov 2026)</button>
+            <button type="button" class="btn" [class.btn-primary]="selectedCalendarPeriod() === '2026-10'" [class.btn-outline-secondary]="selectedCalendarPeriod() !== '2026-10'" (click)="selectedCalendarPeriod.set('2026-10')">Previous Month (Oct 2026)</button>
+          </div>
+        </div>
+
+        <!-- Process Filter -->
+        <div class="d-flex align-items-center gap-2">
+          <span class="small fw-bold text-secondary text-uppercase"><i class="bi bi-funnel me-1"></i>Process:</span>
+          <select class="form-select form-select-sm" style="width: auto;" [ngModel]="filterProcessType()" (ngModelChange)="filterProcessType.set($event)">
+            <option value="ALL">All Processes</option>
+            <option value="KNITTING_JOBWORK">Knitting Jobwork</option>
+            <option value="DYEING_JOBWORK">Dyeing Jobwork</option>
+            <option value="SEWING_CM">Sewing Cut-to-Make</option>
+            <option value="YARN_PURCHASE">Yarn Purchase</option>
+            <option value="FINISHING">Finishing / Bio-Wash</option>
+          </select>
+        </div>
+
+        <!-- Live Currency Conversion Switcher -->
+        <div class="d-flex align-items-center gap-2">
+          <span class="small fw-bold text-success text-uppercase"><i class="bi bi-currency-exchange me-1"></i>Convert Display To:</span>
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn" [class.btn-success]="selectedDisplayCurrency() === 'INR'" [class.btn-outline-secondary]="selectedDisplayCurrency() !== 'INR'" (click)="selectedDisplayCurrency.set('INR')">₹ INR</button>
+            <button type="button" class="btn" [class.btn-success]="selectedDisplayCurrency() === 'USD'" [class.btn-outline-secondary]="selectedDisplayCurrency() !== 'USD'" (click)="selectedDisplayCurrency.set('USD')">$ USD</button>
+            <button type="button" class="btn" [class.btn-success]="selectedDisplayCurrency() === 'EUR'" [class.btn-outline-secondary]="selectedDisplayCurrency() !== 'EUR'" (click)="selectedDisplayCurrency.set('EUR')">€ EUR</button>
+            <button type="button" class="btn" [class.btn-success]="selectedDisplayCurrency() === 'GBP'" [class.btn-outline-secondary]="selectedDisplayCurrency() !== 'GBP'" (click)="selectedDisplayCurrency.set('GBP')">£ GBP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Pricing Form -->
+      @if (showPricingForm()) {
+        <div class="card-body border-bottom bg-body-tertiary p-4">
+          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-plus-circle me-1"></i> New Calendar Pricing Rate Card</h6>
+          <form (ngSubmit)="submitPricing()">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Rate Code *</label>
+                <input type="text" class="form-control text-uppercase font-monospace" [(ngModel)]="newPricing.priceCode" name="priceCode" placeholder="e.g. RATE-KNIT-SJ-24-NOV26" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Process / Material Type *</label>
+                <select class="form-select" [(ngModel)]="newPricing.processType" name="processType" required>
+                  <option value="KNITTING_JOBWORK">KNITTING_JOBWORK</option>
+                  <option value="DYEING_JOBWORK">DYEING_JOBWORK</option>
+                  <option value="SEWING_CM">SEWING_CM (Cut-to-Make)</option>
+                  <option value="YARN_PURCHASE">YARN_PURCHASE</option>
+                  <option value="FINISHING">FINISHING (Bio-Polish, Compacting)</option>
+                  <option value="FABRIC_PRINTING">FABRIC_PRINTING</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Specification / Depth / Fabric *</label>
+                <input type="text" class="form-control" [(ngModel)]="newPricing.categoryOrSpec" name="categoryOrSpec" placeholder="e.g. Single Jersey 24GG / Dark Reactive Shade" required>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">UOM Unit *</label>
+                <select class="form-select" [(ngModel)]="newPricing.uomCode" name="uomCode">
+                  <option value="KG">KG (Kilograms)</option>
+                  <option value="PCS">PCS (Pieces)</option>
+                  <option value="MTR">MTR (Meters)</option>
+                  <option value="BAG">BAG (Bags)</option>
+                  <option value="ROLL">ROLL (Rolls)</option>
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Base Rate *</label>
+                <input type="number" step="0.01" class="form-control" [(ngModel)]="newPricing.baseRate" name="baseRate" placeholder="e.g. 18.00" required>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Currency *</label>
+                <select class="form-select" [(ngModel)]="newPricing.currency" name="currency">
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Effective From Date *</label>
+                <input type="date" class="form-control" [(ngModel)]="newPricing.effectiveFrom" name="effectiveFrom" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">Effective To Date (Optional for ongoing)</label>
+                <input type="date" class="form-control" [(ngModel)]="newPricing.effectiveTo" name="effectiveTo">
+              </div>
+
+              <div class="col-md-12">
+                <label class="form-label small fw-semibold">Notes / Cluster Terms</label>
+                <input type="text" class="form-control" [(ngModel)]="newPricing.notes" name="notes" placeholder="e.g. Contract rate for October 2026 pre-festival volume">
+              </div>
+
+              <div class="col-12 text-end mt-3">
+                <button type="button" class="btn btn-secondary btn-sm me-2" (click)="showPricingForm.set(false)">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="isLoading()">Save Rate Card</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      }
+
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
@@ -588,16 +774,18 @@
               <tr>
                 <th class="ps-3">Rate Code</th>
                 <th>Process / Material Type</th>
-                <th>Specification / Depth</th>
+                <th>Specification / Spec</th>
                 <th>UOM</th>
-                <th>Base Rate</th>
-                <th>Currency</th>
-                <th>Effective Range</th>
+                <th>Base Rate (Actual)</th>
+                <th class="text-success fw-bold">
+                  Converted ({{ selectedDisplayCurrency() }})
+                </th>
+                <th>Calendar Effective Period</th>
                 <th class="text-end pe-3">Status</th>
               </tr>
             </thead>
             <tbody>
-              @for (r of pricingRules(); track r.id) {
+              @for (r of filteredPricingRules(); track r.id) {
                 <tr>
                   <td class="ps-3">
                     <span class="badge bg-secondary-subtle text-body font-monospace px-2 py-1">{{ r.priceCode }}</span>
@@ -619,12 +807,153 @@
                   </td>
                   <td><span class="badge bg-light text-dark border">{{ r.uomCode }}</span></td>
                   <td>
-                    <span class="fw-bold fs-6 text-primary">₹ {{ r.baseRate | number:'1.2-2' }}</span>
+                    <span class="fw-bold fs-6">
+                      {{ getCurrencySymbol(r.currency) }} {{ r.baseRate | number:'1.2-2' }}
+                    </span>
+                    <small class="text-secondary ms-1">{{ r.currency }}</small>
                   </td>
-                  <td>{{ r.currency }}</td>
-                  <td><small class="text-secondary">{{ r.effectiveFrom }} to {{ r.effectiveTo || 'Ongoing' }}</small></td>
+                  <td>
+                    <span class="fw-bold fs-6 text-success">
+                      {{ getCurrencySymbol(selectedDisplayCurrency()) }}
+                      {{ getConvertedRate(r.baseRate, r.currency, selectedDisplayCurrency(), r.effectiveFrom) | number:'1.2-4' }}
+                    </span>
+                    <small class="text-secondary ms-1">{{ selectedDisplayCurrency() }}</small>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center gap-1">
+                      @if (r.effectiveTo && r.effectiveTo <= '2026-10-31') {
+                        <span class="badge bg-secondary">Prev Month</span>
+                      } @else {
+                        <span class="badge bg-success">Current / Active</span>
+                      }
+                      <small class="text-secondary font-monospace">
+                        {{ r.effectiveFrom }} &rarr; {{ r.effectiveTo || 'Ongoing' }}
+                      </small>
+                    </div>
+                  </td>
                   <td class="text-end pe-3">
                     <span class="badge bg-success-subtle text-success">Active</span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="text-center py-4 text-secondary">
+                    No rate cards found matching the selected calendar period or process filter.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- TAB 6: CURRENCY EXCHANGE RATES TRACKER -->
+  <!-- ============================================================== -->
+  @if (activeTab() === 'exchange') {
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-body d-flex justify-content-between align-items-center py-3">
+        <div>
+          <h5 class="mb-0 fw-bold">Calendar Currency Exchange Rates Tracker</h5>
+          <small class="text-secondary">Track foreign currency conversion rates (USD, EUR, GBP to INR) across calendar months for export orders.</small>
+        </div>
+        <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" (click)="showExchangeRateForm.set(!showExchangeRateForm())">
+          <i class="bi" [class.bi-plus-lg]="!showExchangeRateForm()" [class.bi-x-lg]="showExchangeRateForm()"></i>
+          <span>{{ showExchangeRateForm() ? 'Cancel' : '+ Add Exchange Rate' }}</span>
+        </button>
+      </div>
+
+      <!-- Add Exchange Rate Form -->
+      @if (showExchangeRateForm()) {
+        <div class="card-body border-bottom bg-body-tertiary p-4">
+          <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-plus-circle me-1"></i> New Calendar Currency Exchange Rate</h6>
+          <form (ngSubmit)="submitExchangeRate()">
+            <div class="row g-3">
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">From Currency *</label>
+                <select class="form-select" [(ngModel)]="newExchangeRate.fromCurrency" name="fromCurrency" required>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="INR">INR (₹)</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">To Currency *</label>
+                <select class="form-select" [(ngModel)]="newExchangeRate.toCurrency" name="toCurrency" required>
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Exchange Multiplier *</label>
+                <input type="number" step="0.0001" class="form-control font-monospace" [(ngModel)]="newExchangeRate.exchangeRate" name="exchangeRate" placeholder="e.g. 86.50" required>
+                <small class="text-secondary" style="font-size: 0.7rem;">e.g. 1 USD = 86.50 INR</small>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold">Effective Date *</label>
+                <input type="date" class="form-control" [(ngModel)]="newExchangeRate.effectiveDate" name="effectiveDate" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-semibold">Calendar Month</label>
+                <input type="text" class="form-control font-monospace" [(ngModel)]="newExchangeRate.calendarMonth" name="calendarMonth" placeholder="e.g. 2026-11">
+              </div>
+
+              <div class="col-md-12">
+                <label class="form-label small fw-semibold">Reference Source / Benchmark</label>
+                <input type="text" class="form-control" [(ngModel)]="newExchangeRate.source" name="source" placeholder="e.g. RBI Monthly Reference Rate / Customs Circular">
+              </div>
+
+              <div class="col-12 text-end mt-3">
+                <button type="button" class="btn btn-secondary btn-sm me-2" (click)="showExchangeRateForm.set(false)">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="isLoading()">Save Exchange Rate</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      }
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Currency Pair</th>
+                <th>Exchange Multiplier</th>
+                <th>Calendar Month</th>
+                <th>Effective Date</th>
+                <th>Benchmark Source</th>
+                <th class="text-end pe-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ex of exchangeRates(); track ex.id) {
+                <tr>
+                  <td class="ps-3">
+                    <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1">
+                      1 {{ ex.fromCurrency }} &rarr; {{ ex.toCurrency }}
+                    </span>
+                  </td>
+                  <td class="font-monospace fw-bold fs-6 text-body">
+                    {{ ex.exchangeRate | number:'1.2-4' }} {{ ex.toCurrency }}
+                  </td>
+                  <td>
+                    <span class="badge bg-secondary-subtle text-body font-monospace">{{ ex.calendarMonth || 'Monthly' }}</span>
+                  </td>
+                  <td><small class="text-secondary font-monospace">{{ ex.effectiveDate }}</small></td>
+                  <td><small class="text-secondary">{{ ex.source || 'Market Reference' }}</small></td>
+                  <td class="text-end pe-3">
+                    <span class="badge bg-success-subtle text-success">Active</span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-secondary">
+                    No currency exchange rates recorded. Click "+ Add Exchange Rate" to register conversion rates.
                   </td>
                 </tr>
               }

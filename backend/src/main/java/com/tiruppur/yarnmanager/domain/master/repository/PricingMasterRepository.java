@@ -17,6 +17,14 @@ public interface PricingMasterRepository extends JpaRepository<PricingMaster, Lo
     List<PricingMaster> findByProcessTypeAndActiveTrue(String processType);
     boolean existsByPriceCode(String priceCode);
 
+    @Query("SELECT p FROM PricingMaster p WHERE p.active = true " +
+           "AND (:processType IS NULL OR p.processType = :processType) " +
+           "AND (:effectiveDate IS NULL OR (p.effectiveFrom <= :effectiveDate AND (p.effectiveTo IS NULL OR p.effectiveTo >= :effectiveDate))) " +
+           "ORDER BY p.effectiveFrom DESC, p.id DESC")
+    List<PricingMaster> findByEffectiveDateAndProcessType(
+            @Param("effectiveDate") LocalDate effectiveDate,
+            @Param("processType") String processType);
+
     @Query("SELECT p FROM PricingMaster p WHERE p.processType = :processType " +
            "AND p.categoryOrSpec = :category " +
            "AND p.active = true " +

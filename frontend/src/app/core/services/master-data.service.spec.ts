@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { MasterDataService } from './master-data.service';
-import { UomMaster, CustomerMaster, PricingMaster } from '../models/master-data.models';
+import { UomMaster, PricingMaster, ResolvedRateDto, CurrencyExchangeRate } from '../models/master-data.models';
 
 describe('MasterDataService', () => {
   let service: MasterDataService;
@@ -49,7 +49,7 @@ describe('MasterDataService', () => {
     req.flush({ success: true, data: 2268, message: 'OK', timestamp: new Date().toISOString() });
   });
 
-  it('should resolve effective rate for dyeing', () => {
+  it('should resolve effective rate for dyeing with calendar date and currency', () => {
     const mockRate: PricingMaster = {
       priceCode: 'RATE-DYE-DARK',
       processType: 'DYEING_JOBWORK',
@@ -61,13 +61,40 @@ describe('MasterDataService', () => {
       active: true
     };
 
-    service.resolveRate('DYEING_JOBWORK', 'Dark Shade', 1).subscribe(res => {
+    const mockResolved: ResolvedRateDto = {
+      pricingMaster: mockRate,
+      effectiveDate: '2026-11-21',
+      baseRate: 95,
+      baseCurrency: 'INR',
+      targetCurrency: 'USD',
+      convertedRate: 1.10,
+      exchangeRateUsed: 0.01156,
+      note: 'Converted from INR to USD'
+    };
+
+    service.resolveRate('DYEING_JOBWORK', 'Dark Shade', 1, '2026-11-21', 'USD').subscribe(res => {
       expect(res.data.baseRate).toBe(95);
-      expect(res.data.priceCode).toBe('RATE-DYE-DARK');
+      expect(res.data.convertedRate).toBe(1.10);
+      expect(res.data.targetCurrency).toBe('USD');
     });
 
-    const req = httpTesting.expectOne('http://localhost:8080/api/v1/master/pricing/resolve?processType=DYEING_JOBWORK&spec=Dark%20Shade&buyerId=1');
+    const req = httpTesting.expectOne('http://localhost:8080/api/v1/master/pricing/resolve?processType=DYEING_JOBWORK&spec=Dark%20Shade&buyerId=1&orderDate=2026-11-21&targetCurrency=USD');
     expect(req.request.method).toBe('GET');
-    req.flush({ success: true, data: mockRate, message: 'OK', timestamp: new Date().toISOString() });
+    req.flush({ success: true, data: mockResolved, message: 'OK', timestamp: new Date().toISOString() });
+  });
+
+  it('should fetch currency exchange rates', () => {
+    const mockRates: CurrencyExchangeRate[] = [
+      { id: 1, fromCurrency: 'USD', toCurrency: 'INR', exchangeRate: 86.5, effectiveDate: '2026-11-01', calendarMonth: '2026-11', active: true }
+    ];
+
+    service.getExchangeRates('2026-11').subscribe(res => {
+      expect(res.data.length).toBe(1);
+      expect(res.data[0].exchangeRate).toBe(86.5);
+    });
+
+    const req = httpTesting.expectOne('http://localhost:8080/api/v1/master/exchange-rates?calendarMonth=2026-11');
+    expect(req.request.method).toBe('GET');
+    req.flush({ success: true, data: mockRates, message: 'OK', timestamp: new Date().toISOString() });
   });
 });

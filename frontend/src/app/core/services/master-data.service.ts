@@ -2,7 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse } from '../models/yarn-manager.models';
-import { CompanyMaster, ProductMaster, UomMaster, CustomerMaster, PricingMaster } from '../models/master-data.models';
+import {
+  CompanyMaster,
+  ProductMaster,
+  UomMaster,
+  CustomerMaster,
+  PricingMaster,
+  CurrencyExchangeRate,
+  ResolvedRateDto
+} from '../models/master-data.models';
 
 @Injectable({
   providedIn: 'root'
@@ -60,6 +68,10 @@ export class MasterDataService {
     return this.http.get<ApiResponse<UomMaster>>(`${this.baseUrl}/uom/${code}`);
   }
 
+  saveUom(uom: UomMaster): Observable<ApiResponse<UomMaster>> {
+    return this.http.post<ApiResponse<UomMaster>>(`${this.baseUrl}/uom`, uom);
+  }
+
   convertUom(quantity: number, from: string, to: string): Observable<ApiResponse<number>> {
     const params = new HttpParams()
       .set('quantity', quantity.toString())
@@ -86,22 +98,65 @@ export class MasterDataService {
     return this.http.put<ApiResponse<CustomerMaster>>(`${this.baseUrl}/customers/${id}`, customer);
   }
 
-  // 5. Pricing
-  getPricing(activeOnly = false, processType?: string): Observable<ApiResponse<PricingMaster[]>> {
+  // 5. Pricing (Calendar & Multi-Period)
+  getPricing(activeOnly = false, processType?: string, effectiveDate?: string): Observable<ApiResponse<PricingMaster[]>> {
     let params = new HttpParams().set('activeOnly', activeOnly.toString());
     if (processType) {
       params = params.set('processType', processType);
     }
+    if (effectiveDate) {
+      params = params.set('effectiveDate', effectiveDate);
+    }
     return this.http.get<ApiResponse<PricingMaster[]>>(`${this.baseUrl}/pricing`, { params });
   }
 
-  resolveRate(processType: string, spec: string, buyerId?: number): Observable<ApiResponse<PricingMaster>> {
+  savePrice(price: PricingMaster): Observable<ApiResponse<PricingMaster>> {
+    return this.http.post<ApiResponse<PricingMaster>>(`${this.baseUrl}/pricing`, price);
+  }
+
+  resolveRate(
+    processType: string,
+    spec: string,
+    buyerId?: number,
+    orderDate?: string,
+    targetCurrency?: string
+  ): Observable<ApiResponse<ResolvedRateDto>> {
     let params = new HttpParams()
       .set('processType', processType)
       .set('spec', spec);
     if (buyerId) {
       params = params.set('buyerId', buyerId.toString());
     }
-    return this.http.get<ApiResponse<PricingMaster>>(`${this.baseUrl}/pricing/resolve`, { params });
+    if (orderDate) {
+      params = params.set('orderDate', orderDate);
+    }
+    if (targetCurrency) {
+      params = params.set('targetCurrency', targetCurrency);
+    }
+    return this.http.get<ApiResponse<ResolvedRateDto>>(`${this.baseUrl}/pricing/resolve`, { params });
+  }
+
+  // 6. Currency Exchange Rates
+  getExchangeRates(calendarMonth?: string): Observable<ApiResponse<CurrencyExchangeRate[]>> {
+    let params = new HttpParams();
+    if (calendarMonth) {
+      params = params.set('calendarMonth', calendarMonth);
+    }
+    return this.http.get<ApiResponse<CurrencyExchangeRate[]>>(`${this.baseUrl}/exchange-rates`, { params });
+  }
+
+  saveExchangeRate(rate: CurrencyExchangeRate): Observable<ApiResponse<CurrencyExchangeRate>> {
+    return this.http.post<ApiResponse<CurrencyExchangeRate>>(`${this.baseUrl}/exchange-rates`, rate);
+  }
+
+  convertCurrency(amount: number, from: string, to: string, date?: string): Observable<ApiResponse<number>> {
+    let params = new HttpParams()
+      .set('amount', amount.toString())
+      .set('from', from)
+      .set('to', to);
+    if (date) {
+      params = params.set('date', date);
+    }
+    return this.http.get<ApiResponse<number>>(`${this.baseUrl}/exchange-rates/convert`, { params });
   }
 }

@@ -71,8 +71,30 @@ export interface PricingMaster {
   baseRate: number;
   currency: string;
   buyerId?: number;
-  effectiveFrom: string;
-  effectiveTo?: string;
+  effectiveFrom: string; // YYYY-MM-DD
+  effectiveTo?: string;   // YYYY-MM-DD
   notes?: string;
   active: boolean;
+}
+
+export interface CurrencyExchangeRate {
+  id?: number;
+  fromCurrency: string; // 'USD' | 'EUR' | 'GBP' | 'INR'
+  toCurrency: string;   // 'INR' | 'USD' | 'EUR' | 'GBP'
+  exchangeRate: number; // e.g. 86.50
+  effectiveDate: string; // YYYY-MM-DD
+  calendarMonth?: string; // '2026-10', '2026-11'
+  source?: string;
+  active: boolean;
+}
+
+export interface ResolvedRateDto {
+  pricingMaster: PricingMaster;
+  effectiveDate: string;
+  baseRate: number;
+  baseCurrency: string;
+  targetCurrency: string;
+  convertedRate: number;
+  exchangeRateUsed: number;
+  note?: string;
 }

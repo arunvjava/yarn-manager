@@ -1,7 +1,9 @@
 package com.tiruppur.yarnmanager.domain.master.controller;
 
 import com.tiruppur.yarnmanager.common.ApiResponse;
+import com.tiruppur.yarnmanager.domain.master.dto.ResolvedRateDto;
 import com.tiruppur.yarnmanager.domain.master.entity.CompanyMaster;
+import com.tiruppur.yarnmanager.domain.master.entity.CurrencyExchangeRate;
 import com.tiruppur.yarnmanager.domain.master.entity.PricingMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.ProductMaster;
 import com.tiruppur.yarnmanager.domain.master.entity.UomMaster;
@@ -11,15 +13,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/master")
-@Tag(name = "Master Data Management", description = "Dynamic setup for Companies, Garment Products, Units of Measure, Customers, and Price Lists")
+@Tag(name = "Master Data Management", description = "Dynamic setup for Companies, Garment Products, Units of Measure, Customers, Price Lists, and Currency Rates")
 @SecurityRequirement(name = "Bearer Authentication")
 public class MasterDataController {
 
@@ -153,14 +157,15 @@ public class MasterDataController {
     }
 
     // ==========================================
-    // 5. Pricing Master Endpoints
+    // 5. Pricing Master Endpoints (Calendar & Process Rates)
     // ==========================================
     @GetMapping("/pricing")
-    @Operation(summary = "List rate cards (Knitting, Dyeing, Yarn, Sewing CM, Printing)")
+    @Operation(summary = "List rate cards with optional calendar effective date filter")
     public ResponseEntity<ApiResponse<List<PricingMaster>>> getPricing(
             @RequestParam(required = false, defaultValue = "false") Boolean activeOnly,
-            @RequestParam(required = false) String processType) {
-        return ResponseEntity.ok(ApiResponse.ok(masterDataService.getAllPrices(activeOnly, processType)));
+            @RequestParam(required = false) String processType,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate effectiveDate) {
+        return ResponseEntity.ok(ApiResponse.ok(masterDataService.getAllPrices(activeOnly, processType, effectiveDate)));
     }
 
     @GetMapping("/pricing/{code}")
@@ -170,18 +175,50 @@ public class MasterDataController {
     }
 
     @PostMapping("/pricing")
-    @Operation(summary = "Create or update rate card entry")
+    @Operation(summary = "Create or update rate card entry with calendar effective date range")
     public ResponseEntity<ApiResponse<PricingMaster>> createPrice(@Valid @RequestBody PricingMaster price) {
         return ResponseEntity.ok(ApiResponse.ok(masterDataService.savePrice(price), "Pricing rule saved successfully"));
     }
 
     @GetMapping("/pricing/resolve")
-    @Operation(summary = "Resolve effective job-work or material rate for a process and spec")
-    public ResponseEntity<ApiResponse<PricingMaster>> resolveRate(
+    @Operation(summary = "Resolve effective job-work or material rate for a process, spec, order calendar date, and currency")
+    public ResponseEntity<ApiResponse<ResolvedRateDto>> resolveRate(
             @RequestParam String processType,
             @RequestParam String spec,
-            @RequestParam(required = false) Long buyerId) {
-        PricingMaster rate = masterDataService.resolveEffectiveRate(processType, spec, buyerId);
+            @RequestParam(required = false) Long buyerId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate orderDate,
+            @RequestParam(required = false) String targetCurrency) {
+        ResolvedRateDto rate = masterDataService.resolveEffectiveRateWithConversion(
+                processType, spec, buyerId, orderDate, targetCurrency);
         return ResponseEntity.ok(ApiResponse.ok(rate, "Effective rate resolved successfully"));
+    }
+
+    // ==========================================
+    // 6. Currency Exchange Rate Endpoints
+    // ==========================================
+    @GetMapping("/exchange-rates")
+    @Operation(summary = "List historical and current calendar currency exchange rates (USD, EUR, GBP, INR)")
+    public ResponseEntity<ApiResponse<List<CurrencyExchangeRate>>> getExchangeRates(
+            @RequestParam(required = false) String calendarMonth) {
+        return ResponseEntity.ok(ApiResponse.ok(masterDataService.getAllExchangeRates(calendarMonth)));
+    }
+
+    @PostMapping("/exchange-rates")
+    @Operation(summary = "Record new calendar currency exchange rate")
+    public ResponseEntity<ApiResponse<CurrencyExchangeRate>> createExchangeRate(
+            @Valid @RequestBody CurrencyExchangeRate exchangeRate) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                masterDataService.saveExchangeRate(exchangeRate), "Exchange rate saved successfully"));
+    }
+
+    @GetMapping("/exchange-rates/convert")
+    @Operation(summary = "Convert amount between currencies for an order calendar date")
+    public ResponseEntity<ApiResponse<BigDecimal>> convertCurrency(
+            @RequestParam BigDecimal amount,
+            @RequestParam String from,
+            @RequestParam String to,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        BigDecimal converted = masterDataService.convertCurrency(amount, from, to, date);
+        return ResponseEntity.ok(ApiResponse.ok(converted, amount + " " + from + " = " + converted + " " + to));
     }
 }
