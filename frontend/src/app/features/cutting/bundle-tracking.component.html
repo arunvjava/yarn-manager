@@ -54,20 +54,27 @@
               <td class="px-4 py-3 fw-bold text-white">{{ b.size }}</td>
               <td class="px-4 py-3">{{ b.quantity }} pcs</td>
               <td class="px-4 py-3">
-                <span class="badge"
-                      [ngClass]="{
-                        'bg-secondary bg-opacity-50 text-light': b.currentStage === 'CUT',
-                        'bg-warning bg-opacity-25 text-warning border border-warning': b.currentStage === 'PRINTING',
-                        'bg-primary bg-opacity-25 text-primary border border-primary': b.currentStage === 'SEWING',
-                        'bg-success bg-opacity-25 text-success border border-success': b.currentStage === 'FINISHED'
-                      }">
+                <span class="badge badge-stage" [ngClass]="getStageBadgeClass(b.currentStage)">
+                  <i class="bi" [ngClass]="getStageIcon(b.currentStage)"></i>
                   {{ b.currentStage }}
                 </span>
               </td>
               <td class="px-4 py-3 text-end">
-                <button (click)="quickMove(b, 'SEWING')" class="btn btn-outline-info btn-sm">
-                  Issue to Sewing &rarr;
-                </button>
+                @if (b.currentStage === 'FINISHED') {
+                  <span class="badge badge-stage badge-stage-finished">
+                    <i class="bi bi-check2-all"></i> Completed
+                  </span>
+                } @else if (b.currentStage === 'SEWING') {
+                  <button (click)="quickMove(b, 'FINISHED')" class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1">
+                    <span>Move to Finished</span>
+                    <i class="bi bi-arrow-right"></i>
+                  </button>
+                } @else {
+                  <button (click)="quickMove(b, 'SEWING')" class="btn btn-outline-info btn-sm d-inline-flex align-items-center gap-1">
+                    <span>Issue to Sewing</span>
+                    <i class="bi bi-arrow-right"></i>
+                  </button>
+                }
               </td>
             </tr>
           }

@@ -175,9 +175,144 @@ body {
   border-radius: 9999px;
 }
 
-/* Theme-adaptive text overrides for light mode */
-[data-bs-theme="light"] .text-white {
+/* ====================================================================
+   ERP WORKFLOW STAGE BADGES (High contrast, WCAG AAA accessible)
+   ==================================================================== */
+.badge-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4em 0.8em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.badge-stage-cut {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.badge-stage-printing {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fcd34d !important;
+}
+
+.badge-stage-embroidery {
+  background-color: #ede9fe !important;
+  color: #5b21b6 !important;
+  border: 1px solid #c4b5fd !important;
+}
+
+.badge-stage-sewing {
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #7dd3fc !important;
+}
+
+.badge-stage-finished {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  border: 1px solid #6ee7b7 !important;
+}
+
+/* Dark mode overrides for stage badges */
+[data-bs-theme="dark"] .badge-stage-cut {
+  background-color: rgba(148, 163, 184, 0.15) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+[data-bs-theme="dark"] .badge-stage-printing {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  color: #fcd34d !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+}
+
+[data-bs-theme="dark"] .badge-stage-embroidery {
+  background-color: rgba(139, 92, 246, 0.2) !important;
+  color: #c4b5fd !important;
+  border-color: rgba(139, 92, 246, 0.45) !important;
+}
+
+[data-bs-theme="dark"] .badge-stage-sewing {
+  background-color: rgba(14, 165, 233, 0.2) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(14, 165, 233, 0.45) !important;
+}
+
+[data-bs-theme="dark"] .badge-stage-finished {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+}
+
+/* Universal badge contrast enhancements & safeguards */
+.badge.bg-primary-subtle {
+  background-color: var(--bs-primary-bg-subtle) !important;
+  color: var(--bs-primary-text-emphasis) !important;
+}
+
+.badge.bg-warning-subtle {
+  background-color: var(--bs-warning-bg-subtle) !important;
+  color: var(--bs-warning-text-emphasis) !important;
+}
+
+.badge.bg-success-subtle {
+  background-color: var(--bs-success-bg-subtle) !important;
+  color: var(--bs-success-text-emphasis) !important;
+}
+
+.badge.bg-info-subtle {
+  background-color: var(--bs-info-bg-subtle) !important;
+  color: var(--bs-info-text-emphasis) !important;
+}
+
+.badge.bg-secondary-subtle {
+  background-color: var(--bs-secondary-bg-subtle) !important;
+  color: var(--bs-secondary-text-emphasis) !important;
+}
+
+.badge.bg-primary {
+  background-color: #0d6efd !important;
+  color: #ffffff !important;
+}
+
+.badge.bg-success {
+  background-color: #198754 !important;
+  color: #ffffff !important;
+}
+
+.badge.bg-secondary {
+  background-color: #64748b !important;
+  color: #ffffff !important;
+}
+
+.badge.bg-warning {
+  background-color: #f59e0b !important;
+  color: #1e293b !important;
+}
+
+.badge.bg-info {
+  background-color: #0dcaf0 !important;
   color: #0f172a !important;
+}
+
+/* Theme-adaptive text overrides for light mode */
+[data-bs-theme="light"] .text-white:not(.badge):not(.btn) {
+  color: #0f172a !important;
+}
+
+[data-bs-theme="light"] .badge.text-white,
+[data-bs-theme="light"] .badge .text-white,
+[data-bs-theme="light"] .btn.text-white,
+[data-bs-theme="light"] .btn .text-white {
+  color: #ffffff !important;
 }
 
 [data-bs-theme="light"] .text-white-50 {

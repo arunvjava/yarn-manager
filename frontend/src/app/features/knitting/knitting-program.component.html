@@ -17,7 +17,7 @@
                 <span class="text-primary font-monospace small fw-bold">{{ prog.programNumber }}</span>
                 <h5 class="fw-bold text-white mb-0">{{ prog.fabricType }}</h5>
               </div>
-              <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 fw-semibold">
                 {{ prog.status }}
               </span>
             </div>
@@ -89,7 +89,7 @@
               <td class="px-4 py-3 fw-bold text-white">{{ roll.rollWeightKg | number:'1.2-2' }} kg</td>
               <td class="px-4 py-3">{{ roll.actualGsm }} GSM</td>
               <td class="px-4 py-3">
-                <span class="badge" [ngClass]="roll.qualityGrade === 'A' ? 'bg-success bg-opacity-25 text-success border border-success' : 'bg-warning bg-opacity-25 text-warning border border-warning'">
+                <span class="badge" [ngClass]="roll.qualityGrade === 'A' ? 'bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1' : 'bg-warning-subtle text-warning border border-warning-subtle fw-semibold px-2 py-1'">
                   Grade {{ roll.qualityGrade }}
                 </span>
               </td>
