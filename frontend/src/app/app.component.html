@@ -1,4 +1,20 @@
-<div class="min-vh-100" [attr.data-bs-theme]="themeService.currentTheme()" style="background-color: var(--app-bg); color: var(--app-text);">
+<div class="min-vh-100 position-relative" [attr.data-bs-theme]="themeService.currentTheme()" style="background-color: var(--app-bg); color: var(--app-text);">
+  <!-- Top Floating Notification for Session Expiration / 401 -->
+  @if (authService.sessionExpiredMessage(); as alertMsg) {
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 2000; max-width: 90vw; width: 480px;">
+      <div class="alert alert-warning border border-warning border-opacity-75 shadow-lg d-flex align-items-center justify-content-between p-3 rounded-3" role="alert">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-shield-exclamation fs-4 text-warning"></i>
+          <div>
+            <div class="fw-bold small text-body">Session Expired (401)</div>
+            <div class="small text-secondary">{{ alertMsg }}</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close ms-2" (click)="authService.clearSessionExpiredMessage()" aria-label="Close"></button>
+      </div>
+    </div>
+  }
+
   @if (authService.isAuthenticated()) {
     <!-- Full Authenticated App Layout (Sidebar + Top Navbar + Routed Content) -->
     <div class="d-flex vh-100 overflow-hidden">

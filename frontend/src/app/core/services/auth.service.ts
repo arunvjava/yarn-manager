@@ -17,6 +17,7 @@ export class AuthService {
 
   // Signals for state management
   private currentUserSignal = signal<UserSession | null>(this.getStoredSession());
+  sessionExpiredMessage = signal<string | null>(null);
 
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isAuthenticated = computed(() => !!this.currentUserSignal());
@@ -28,6 +29,7 @@ export class AuthService {
         map(res => res.data),
         tap(user => {
           this.setSession(user);
+          this.clearSessionExpiredMessage();
         }),
         catchError(err => {
           // Fallback mock authentication if backend server is offline during dev/demo
@@ -40,6 +42,7 @@ export class AuthService {
               permissions: ['READ_ALL', 'WRITE_ALL', 'APPROVE_DC', 'DISPATCH']
             };
             this.setSession(mockAdmin);
+            this.clearSessionExpiredMessage();
             return of(mockAdmin);
           }
           throw err;
@@ -52,7 +55,28 @@ export class AuthService {
       localStorage.removeItem(this.STORAGE_KEY);
     }
     this.currentUserSignal.set(null);
+    this.sessionExpiredMessage.set(null);
     this.router.navigate(['/login']);
+  }
+
+  handleSessionExpired(message = 'Your session has expired or you are unauthorized. Please sign in again to continue.'): void {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.STORAGE_KEY);
+    }
+    this.currentUserSignal.set(null);
+    this.sessionExpiredMessage.set(message);
+
+    const currentUrl = this.router.url;
+    const queryParams: Record<string, string> = { sessionExpired: 'true' };
+    if (currentUrl && currentUrl !== '/login') {
+      queryParams['returnUrl'] = currentUrl;
+    }
+
+    this.router.navigate(['/login'], { queryParams });
+  }
+
+  clearSessionExpiredMessage(): void {
+    this.sessionExpiredMessage.set(null);
   }
 
   getToken(): string | null {

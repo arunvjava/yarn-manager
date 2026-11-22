@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter, Router, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { signal } from '@angular/core';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
@@ -15,7 +16,9 @@ describe('LoginComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['login']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['login', 'clearSessionExpiredMessage'], {
+      sessionExpiredMessage: signal('Custom expired message')
+    });
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent],
@@ -24,7 +27,15 @@ describe('LoginComponent', () => {
         ThemeService,
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([])
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              queryParams: { sessionExpired: 'true', returnUrl: '/yarn' }
+            }
+          }
+        }
       ]
     }).compileComponents();
 
@@ -39,13 +50,23 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should display session expired notification when sessionExpired queryParam is true', () => {
+    expect(component.sessionExpiredNotice()).toContain('Custom expired message');
+  });
+
+  it('should clear session notice and call authService.clearSessionExpiredMessage', () => {
+    component.clearSessionNotice();
+    expect(component.sessionExpiredNotice()).toBeNull();
+    expect(authServiceSpy.clearSessionExpiredMessage).toHaveBeenCalled();
+  });
+
   it('should populate credentials when demo role is selected', () => {
     component.setDemoRole('supervisor');
     expect(component.credentials.username).toBe('supervisor');
     expect(component.credentials.password).toBe('super123');
   });
 
-  it('should call authService.login on submit and navigate', () => {
+  it('should call authService.login on submit and navigate to returnUrl', () => {
     const mockUser: UserSession = {
       token: 'jwt-123',
       username: 'admin',
@@ -59,6 +80,7 @@ describe('LoginComponent', () => {
     component.onSubmit();
 
     expect(authServiceSpy.login).toHaveBeenCalledWith({ username: 'admin', password: 'admin123' });
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/yarn');
+    expect(component.sessionExpiredNotice()).toBeNull();
   });
 });

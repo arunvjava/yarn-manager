@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -12,8 +12,8 @@ import { LoginPayload } from '../../../core/models/auth.models';
   imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html'
 })
-export class LoginComponent {
-  private authService = inject(AuthService);
+export class LoginComponent implements OnInit {
+  authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   themeService = inject(ThemeService);
@@ -25,6 +25,16 @@ export class LoginComponent {
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  sessionExpiredNotice = signal<string | null>(null);
+
+  ngOnInit(): void {
+    const isExpired = this.route.snapshot.queryParams['sessionExpired'] === 'true';
+    if (isExpired) {
+      const msg = this.authService.sessionExpiredMessage() ||
+        'Your session has expired or you are unauthorized. Please sign in again to continue.';
+      this.sessionExpiredNotice.set(msg);
+    }
+  }
 
   onSubmit(): void {
     if (!this.credentials.username || !this.credentials.password) {
@@ -38,6 +48,7 @@ export class LoginComponent {
     this.authService.login(this.credentials).subscribe({
       next: () => {
         this.isLoading.set(false);
+        this.sessionExpiredNotice.set(null);
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
         this.router.navigateByUrl(returnUrl);
       },
@@ -56,5 +67,10 @@ export class LoginComponent {
     } else if (role === 'qc') {
       this.credentials = { username: 'qc_lead', password: 'qc123' };
     }
+  }
+
+  clearSessionNotice(): void {
+    this.sessionExpiredNotice.set(null);
+    this.authService.clearSessionExpiredMessage();
   }
 }

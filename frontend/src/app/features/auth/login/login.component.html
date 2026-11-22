@@ -23,6 +23,18 @@
       <small class="text-secondary">Sign in to access factory floor production lines</small>
     </div>
 
+    <!-- Session Expired 401 Notice -->
+    @if (sessionExpiredNotice()) {
+      <div class="alert alert-warning border border-warning border-opacity-50 d-flex align-items-start gap-2 py-3 px-3 rounded-3 small mb-4 shadow-sm" role="alert">
+        <i class="bi bi-shield-exclamation fs-4 text-warning flex-shrink-0 mt-n1"></i>
+        <div class="flex-grow-1">
+          <div class="fw-bold text-body">Authentication Required (401)</div>
+          <div class="text-secondary mt-0.5">{{ sessionExpiredNotice() }}</div>
+        </div>
+        <button type="button" class="btn-close ms-2" (click)="clearSessionNotice()" aria-label="Dismiss"></button>
+      </div>
+    }
+
     <!-- Error Banner -->
     @if (errorMessage()) {
       <div class="alert alert-danger d-flex align-items-center gap-2 py-2 px-3 rounded-3 small mb-4">
